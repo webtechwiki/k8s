@@ -109,6 +109,8 @@ multipass shell master1
 ```shell
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
+  config.disksiez.size = '10GB'
+  # master1
   config.vm.define "master1" do |master1|
     master1.vm.network "private_network", ip: "192.168.33.10"
     master1.vm.hostname = "master1"
@@ -120,6 +122,7 @@ Vagrant.configure("2") do |config|
       v.cpus = 2
     end
   end
+  # worker1
   config.vm.define "worker1" do |worker1|
     worker1.vm.network "private_network", ip: "192.168.33.11"
     worker1.vm.hostname = "worker1"
@@ -131,6 +134,7 @@ Vagrant.configure("2") do |config|
       v.cpus = 2
     end
   end
+  # worker2
   config.vm.define "worker2" do |worker2|
     worker2.vm.network "private_network", ip: "192.168.33.12"
     worker2.vm.hostname = "worker2"
@@ -145,6 +149,27 @@ Vagrant.configure("2") do |config|
 end
 ```
 
+使用`vagrant status`命令查看当前虚拟机的状态，可以看到如下内容
+
+```shell
+pan@pan-PC ~/Work/vagrant/kubernetes$ vagrant status                                                                                                          
+Current machine states:
+
+master1                   running (virtualbox)
+worker1                   running (virtualbox)
+worker2                   running (virtualbox)
+
+This environment represents multiple VMs. The VMs are all listed
+above with their current state. For more information about a specific
+VM, run `vagrant status NAME`.
+```
+
+
+通过以下指令进入虚拟机中
+```shell
+# 进入master1主机
+vagrant ssh master1
+```
 
 
 ### 2.2. 修改root用户密码
@@ -190,8 +215,15 @@ curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key a
 add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
 # 更新软件库
 apt-get -y update
+# 查询docker版本
+apt-cache madison docker-ce
 # 安装程序
+
+# 18.04 上执行
 apt-get -y install docker-ce=5:19.03.15~3-0~ubuntu-bionic
+# 20.04 上执行
+apt-get -y install docker-ce=5:19.03.15~3-0~ubuntu-focal
+
 # 固定版本
 apt-mark hold docker-ce
 ```
