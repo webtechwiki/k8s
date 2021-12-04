@@ -112,7 +112,7 @@ Vagrant.configure("2") do |config|
   config.disksiez.size = '10GB'
   # master1
   config.vm.define "master1" do |master1|
-    master1.vm.network "private_network", ip: "192.168.33.10"
+    master1.vm.network "public_network", ip: "192.168.33.10"
     master1.vm.hostname = "master1"
     # 将宿主机../data目录挂载到虚拟机/vagrant_dev目录
     master1.vm.synced_folder "../data", "/vagrant_data"
@@ -124,7 +124,7 @@ Vagrant.configure("2") do |config|
   end
   # worker1
   config.vm.define "worker1" do |worker1|
-    worker1.vm.network "private_network", ip: "192.168.33.11"
+    worker1.vm.network "public_network", ip: "192.168.33.11"
     worker1.vm.hostname = "worker1"
     # 将宿主机../data目录挂载到虚拟机/vagrant_pro目录
     worker1.vm.synced_folder "../data", "/vagrant_data"
@@ -136,7 +136,7 @@ Vagrant.configure("2") do |config|
   end
   # worker2
   config.vm.define "worker2" do |worker2|
-    worker2.vm.network "private_network", ip: "192.168.33.12"
+    worker2.vm.network "public_network", ip: "192.168.33.12"
     worker2.vm.hostname = "worker2"
     # 将宿主机../data目录挂载到虚拟机/vagrant_pro目录
     worker2.vm.synced_folder "../data", "/vagrant_data"
@@ -347,7 +347,17 @@ kubeadm join 192.168.64.8:6443 --token mzolyd.fgbta1hw9s9yml55 \
     --discovery-token-ca-cert-hash sha256:21ffa3a184bb6ed36306b483723c37169753f9913e645dc4f88bb12afcebc9dd
 ```
 
-### 4.2. 配置集群网络
+### 4.2. 让Linux用户能操作集群
+
+根据初始化结果提示，为了让master1上的Linux用户正常操作集群，我们输入exit按回车切换回普通用户后执行以下命令
+
+```shell
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+### 4.3. 配置集群网络
 
 根据初始化结果提示，我们需要安装网络插件。本次我们使用flannel作为集群的网络插件，将flannel配置文件从互联网保存到master1，文件地址为：[https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml](https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml)，在master1上将文件命名为kube-flannel.yml，后执行以下命令
 
@@ -365,15 +375,7 @@ serviceaccount/flannel created
 configmap/kube-flannel-cfg created
 daemonset.apps/kube-flannel-ds created
 ```
-### 4.3. 让Linux普通用户能操作集群
 
-根据初始化结果提示，为了让master1上的Linux用户正常操作集群，我们输入exit按回车切换回普通用户后执行以下命令
-
-```shell
-$ mkdir -p $HOME/.kube
-$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
 ### 4.4. 初始化集群工作节点
 同时，初始化集群管理节点master1之后，我们需要将工作节点worker1和wroker2加入到集群中。将工作节点的初始化命令拷贝到worker1和worker2，使集群的工作节点（worker1、worker2）和工作节点（master1）关联起来，如下命令
@@ -404,6 +406,17 @@ kube-system   kube-scheduler-master1            1/1     Running   0          14m
 
 需要注意的是，如果你的列表中显示的所有pod并不是处于Running状态，你需要等待一段时间。而且，你在安装集群的过程中，最好处于一个优质的网络环境。
 
-至此，集群搭建完毕。从下一篇文章开始我们将继续介绍k8s基础知识
 
 
+## 5. k8s集群的重置
+
+```shell
+# 驱离工作节点的 pod
+kubectl drain worker1 --delete-local-data --force --ignore-daemonsets
+kubectl drain worker2 --delete-local-data --force --ignore-daemonsets
+# 删除工作节点
+kubectl delete node worker1
+kubectl delete node worker2
+# 重置集群
+kubeadm reset
+```
