@@ -109,7 +109,7 @@ multipass shell master1
 ```shell
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
-  config.disksiez.size = '10GB'
+  config.disksize.size = '10GB'
   # master1
   config.vm.define "master1" do |master1|
     master1.vm.network "public_network", ip: "192.168.33.10"
