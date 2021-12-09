@@ -2,7 +2,7 @@
 
 > 本系列文章，我们将在Ubuntu Server 18.04上搭建k8s环境进行入门学习。为了使用原生的Ubuntu Server 18.04，我们将使用multipass来创建多台Ubuntu Server 18.04虚拟环境。也就是说，如果你想完整参考本系列博客学习，你电脑上应当安装并能正常运行multipass，如果你想了解multipass基本操作，可以参考我写的另一篇博客：[https://blog.jkdev.cn/index.php/archives/327/](https://blog.jkdev.cn/index.php/archives/327/)。
 >
-> 本文演示k8s集群搭建步骤，并不涉及k8s基础知识，你可能对文章的一些专业词语感到默认，但没有关系，我们在后面会循序渐进地介绍k8s知识。
+> 本文演示k8s集群搭建步骤，并不涉及k8s基础知识，你可能对文章的一些专业词语感到陌生，但没有关系，我们在后面会循序渐进地介绍k8s知识。
 
 本次我们将部署一个主节点（master1）和两个工作节点（worker1、worker2）的集群。为了节省电脑资源，master1、worker1、worker2每个节点分配2个cpu、2G内存、10G硬盘。这是k8s要求的最低配置，但这些配置完全足够我们用以学习。相关操作都会在root用户之下。
 
@@ -212,7 +212,7 @@ $ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ```
 
 ### 4. 初始化集群工作节点
-同时，初始化集群管理节点master1之后，我们需要将工作节点worker1和wroker2加入到集群中。将工作节点的初始化命令拷贝到worker1和worker2，使集群的工作节点（worker1、worker2）和工作节点（master1）关联起来，如下命令
+同时，初始化集群管理节点master1之后，我们需要将工作节点worker1和wroker2加入到集群中。将工作节点的初始化命令拷贝到worker1和worker2，使集群的工作节点（worker1、worker2）和管理节点（master1）关联起来，如下命令
 
 ```shell
 kubeadm join 192.168.64.8:6443 --token mzolyd.fgbta1hw9s9yml55 \

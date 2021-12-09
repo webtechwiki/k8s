@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="75c5f6a5-ce75-4385-ab58-c6aafdd5fd56" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ingress.jpeg" beforeDir="false" afterPath="$PROJECT_DIR$/img/ingress.jpeg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb1-build.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb1-build.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb2-yaml.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb2-yaml.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb3-namespace.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb3-namespace.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb4-pod.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb4-pod.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb5-controller.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb5-controller.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb6-service.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb6-service.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb7-ingress.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb7-ingress.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/kb8-storage.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/kb8-storage.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sharing.md" beforeDir="false" afterPath="$PROJECT_DIR$/note/sharing.md" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ComposerSettings">
+    <execution />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GoLibraries">
+    <option name="indexEntireGoPath" value="false" />
+  </component>
+  <component name="ProjectId" id="221qrlYnaMu9fWYtKCQwIDsNckI" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.formatter.settings.were.checked" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="vue.rearranger.settings.migration" value="true" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="75c5f6a5-ce75-4385-ab58-c6aafdd5fd56" name="Changes" comment="" />
+      <created>1639015643904</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1639015643904</updated>
+      <workItem from="1639015649092" duration="8000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VgoProject">
+    <integration-enabled>true</integration-enabled>
+  </component>
+</project>
