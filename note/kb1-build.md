@@ -1,10 +1,10 @@
 # 学习kubernetes，从快速搭建k8s集群开始
 
-> 本系列文章，我们将在Ubuntu Server 18.04上搭建k8s环境进行入门学习。为了使用原生的Ubuntu Server 18.04，我们将使用multipass来创建多台Ubuntu Server 18.04虚拟环境。也就是说，如果你想完整参考本系列博客学习，你电脑上应当安装并能正常运行multipass，如果你想了解multipass基本操作，可以参考我写的另一篇博客：[https://blog.jkdev.cn/index.php/archives/327/](https://blog.jkdev.cn/index.php/archives/327/)。
->
-> 本文演示k8s集群搭建步骤，并不涉及k8s基础知识，你可能对文章的一些专业词语感到陌生，但没有关系，我们在后面会循序渐进地介绍k8s知识。
+> 我们将使用multipass来创建多台Ubuntu Server 18.04虚拟环境。如果你不熟悉multipass的基本操作，可以参考另一篇文章：[https://blog.jkdev.cn/index.php/archives/327/](https://blog.jkdev.cn/index.php/archives/327/)。
 
-本次我们将部署一个主节点（master1）和两个工作节点（worker1、worker2）的集群。为了节省电脑资源，master1、worker1、worker2每个节点分配2个cpu、2G内存、10G硬盘。这是k8s要求的最低配置，但这些配置完全足够我们用以学习。相关操作都会在root用户之下。
+本次我们将部署一个主节点（master1）和两个工作节点（worker1、worker2）的集群。为了节省电脑资源，master1、worker1、worker2每个节点分配2个cpu、2G内存、10G硬盘。这是k8s要求的最低配置，但这些配置完全足够我们用以学习，在root用户下执行相关操作。
+
+本文主要内容是k8s集群搭建过程，并不涉及k8s的深入知识，你可能对文章的一些专业词语感到陌生，但没有关系，在后续的文章中将逐渐介绍。
 
 
 
@@ -12,23 +12,29 @@
 
 ### 1. 创建Ubuntu Server 18.04虚拟机
 分别创建2核cpu、10G硬盘、2G内存，名为master1、worker1、worker2三台虚拟机
+
 ```shell
-multipass launch -c 1 -d 10G -m 1G -n master1 18.04
-multipass launch -c 1 -d 10G -m 1G -n worker1 18.04
-multipass launch -c 1 -d 10G -m 1G -n worker2 18.04
+multipass launch -c 2 -d 10G -m 2G -n master1 18.04
+multipass launch -c 2 -d 10G -m 2G -n worker1 18.04
+multipass launch -c 2 -d 10G -m 2G -n worker2 18.04
 ```
-使用```multipass list```查询创建的虚拟机列表，如下
+
+使用 `multipass list` 查询创建的虚拟机列表，如下
+
 ```shell
 pan@pandeMacBook-Pro ~ % multipass list
 Name                    State             IPv4             Image
 master1                 Running           192.168.64.8     Ubuntu 18.04 LTS
 worker1                 Running           192.168.64.11    Ubuntu 18.04 LTS
 worker2                 Running           192.168.64.12    Ubuntu 18.04 LTS
-````
-创建虚拟机之后，我们需要对虚拟机进行初始化操作，以下的操作需要在所有主机上进行。
+```
+
+创建虚拟机之后，我们需要对虚拟机进行初始化操作，以下2、3的操作需要在所有主机上进行。
 
 ### 2. 修改root用户密码
-为了方便使用root用户，我们对每一台虚拟机进行密码修改操作。以master1为例，如下代码
+
+为了方便使用root用户，我们对每一台虚拟机的root账户进行密码修改操作。以master1为例，如下指令
+
 ```shell
 # 进入主机
 multipass shell master1
@@ -54,18 +60,18 @@ iptables -F
 
 ## 二、安装docker与kubeadm
 
-下面的很多安装过程，我们大多使用阿里云镜像进行安装。
+以下1、2、3的操作需要在所有主机上进行。
 
 ### 1. 安装与配置docker
 安装docker
 ```shell
-# 安装GPG证书
+# 安装 docker 的阿里云镜像 GPG 证书
 curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
-# 写入软件源信息
+# 写入 docker 的阿里云镜像软件源
 add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
 # 更新软件库
 apt-get -y update
-# 安装程序
+# 安装 docker
 apt-get -y install docker-ce=5:19.03.15~3-0~ubuntu-bionic
 # 固定版本
 apt-mark hold docker-ce
@@ -85,9 +91,9 @@ systemctl restart docker
 
 ### 2. 安装kubeadm, kubelet, kubectl
 ```shell
-# 下载 gpg 密钥
+# 安装 k8s 的阿里云镜像 GPG 证书
 curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -
-# 添加 k8s 镜像源
+# 添加 k8s 的阿里云镜像源
 cat <<EOF > /etc/apt/sources.list.d/kubernetes.list
 deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
 EOF
@@ -99,8 +105,10 @@ apt-get install -y kubelet=1.18.0-00 kubeadm=1.18.0-00 kubectl=1.18.0-00
 apt-mark hold kubelet kubeadm kubectl
 ```
 
+> 需要注意的是：安装的 docker 版本要和 k8s 版本对应，以上安装的 docker 19.03 和 k8s 1.18.0 是存在对应关系的，否则 k8s 无法正常使用，你可以通过查阅官方文档的方式查看更多的对应关系。
+
 ### 3. 集群镜像准备
-使用```kubeadm config images list```命令查看当前集群所需要的镜像，镜像版本会根据kubeadm版本而定，返回如下内容
+使用```kubeadm config images list```命令查看当前集群基础服务所需要的镜像，镜像版本会根据当前的系统环境而定，返回如下内容
 ```shell
 k8s.gcr.io/kube-apiserver:v1.18.20
 k8s.gcr.io/kube-controller-manager:v1.18.20
@@ -158,8 +166,8 @@ kubeadm init --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16  --ign
 
 参数说明
 
-* ```--service-cidr```：k8s中scv网络的网络段
-* ```--pod-network-cidr```：k8s中pod使用的网络段
+* ```--service-cidr```：k8s中service网络使用的网段
+* ```--pod-network-cidr```：k8s中pod网络使用的网段
 * ```--ignore-preflight-errors```：忽略swap报错
 
 初始化结果如下
@@ -183,9 +191,22 @@ kubeadm join 192.168.64.8:6443 --token mzolyd.fgbta1hw9s9yml55 \
     --discovery-token-ca-cert-hash sha256:21ffa3a184bb6ed36306b483723c37169753f9913e645dc4f88bb12afcebc9dd
 ```
 
-### 2. 配置集群网络
 
-根据初始化结果提示，我们需要安装网络插件。本次我们使用flannel作为集群的网络插件，将flannel配置文件从互联网保存到master1，文件地址为：[https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml](https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml)，在master1上将文件命名为kube-flannel.yml，后执行以下命令
+根据以上的成功初始化提示信息，我们可以知道接下来要完成三个操作，一是拷贝配置文件；二是部署pod的网络插件；三是将工作节点加入到集群中。下文的 2、3、4 中说明操作过程。
+
+### 2. 拷贝配置文件
+
+根据初始化结果提示，我们执行以下命令，拷贝k8s的相关配置文件到用户的家目录，才能使master1上当前登录的用户正常操作集群
+
+```shell
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+### 3. 配置集群网络
+
+在拷贝好k8s的配置文件到用户家目录之后，我们需要安装网络插件。本次我们使用flannel作为集群的网络插件，将flannel配置文件从github下载保存到master1，文件地址为：[https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml](https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml)，在master1上将文件命名为kube-flannel.yml，后执行以下命令
 
 ```shell
 kubectl apply -f kube-flannel.yml
@@ -201,18 +222,10 @@ serviceaccount/flannel created
 configmap/kube-flannel-cfg created
 daemonset.apps/kube-flannel-ds created
 ```
-### 3. 让Linux普通用户能操作集群
 
-根据初始化结果提示，为了让master1上的Linux普通用户正常操作集群，我们输入exit按回车切换回普通用户后执行以下命令
-
-```shell
-$ mkdir -p $HOME/.kube
-$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
-```
 
 ### 4. 初始化集群工作节点
-同时，初始化集群管理节点master1之后，我们需要将工作节点worker1和wroker2加入到集群中。将工作节点的初始化命令拷贝到worker1和worker2，使集群的工作节点（worker1、worker2）和管理节点（master1）关联起来，如下命令
+初始化集群管理节点master1之后，此时我们可以将工作节点worker1和wroker2加入到集群中。将工作节点的初始化命令拷贝到worker1和worker2，使集群的工作节点（worker1、worker2）和管理节点（master1）关联起来，如下命令
 
 ```shell
 kubeadm join 192.168.64.8:6443 --token mzolyd.fgbta1hw9s9yml55 \
@@ -238,10 +251,12 @@ kube-system   kube-proxy-jgm4h                  1/1     Running   0          3m1
 kube-system   kube-scheduler-master1            1/1     Running   0          14m
 ```
 
-需要注意的是，如果你的列表中显示的所有pod并不是处于Running状态，你需要等待一段时间。而且，你在安装集群的过程中，最好处于一个优质的网络环境。
+需要注意的是，如果你的列表中显示的所有pod并不是处于Running状态，你需要等待一段时间。而且，你在安装集群的过程中，最好处于一个优质的网络环境。如果你电脑配置允许，你还可以使用上文的涉及到的操作步骤，添加更多的工作节点。
+
 
 至此，集群搭建完毕。从下一篇文章开始我们将继续介绍k8s基础知识
 
 
 
 > 本文原创首发自wx订阅号：**极客开发者up**，禁止转载
+

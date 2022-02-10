@@ -6,7 +6,7 @@
 
 ## 1. k8s概述
 
-k8s 本身涉及到大量的技术知识，包括操作系统、网络、存储、调度、分布式等方面的知识，这也正是技术人员学习与努力的方向。在学习之初，本系列文章不会着重讲解 Kubernetes的详细知识。而是尝试去了解Kubernetes的最基本的概念，并引导你基于官方的kubeadmin 工具搭建一个简单的Kubernetes集群。后续再循序渐进地进入k8s的系统学习。
+k8s 本身涉及到大量的技术知识，包括操作系统、网络、存储、调度、分布式等方面的知识，这也正是技术人员学习与努力的方向。在这系列的文章，我们从了解Kubernetes的最基本的概念开始，先基于官方的kubeadmin 工具搭建一个简单的Kubernetes集群，再循序渐进地进入k8s的系统学习。
 
 
 k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管理“容器化应用程序”的开源系统。简单地说就是：k8s 是一套服务器集群管理组件，k8s现在普遍用于管理集群节点上的容器。在学习k8s之前，我们应该具备一定的docker容器基础。
@@ -38,25 +38,22 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 **主控制节点(master node):**
 
-- master节点需要安装以下组件：
-
 - apiserver: 用于接收客户端操作k8s的指令
 
 - schduler: 从多个woker节点组件中选举一个来启动服务
 
 - controller manger: 向worker节点的kubelet组件发送指令
 
+
 **工作节点(worker node):**
 
-工作节点需要安装以下组件:
+- kubenet：负责向docker发送指令管理docker容器
 
-- kubenet：向docker发送指令管理docker容器
-
-- kubeproxy：管理docker容器的网络
+- kubeproxy：调度docker容器的网络
 
 ## 4. 学习前提
 
-在正式学习使用kubernetes来管理你的容器应用之前，应当拥有一个Kubernetes集群环境。可以根据下面的笔记链接，我们第一步先用自己的电脑，搭建一个虚拟的Kubernetes集群。
+在深入学习kubernetes之前，我们应当拥有一个Kubernetes集群环境。可以根据下面的第一篇笔记教程，用自己的电脑搭建一个虚拟的Kubernetes集群环境。
 
 ## 5. 笔记目录
 
