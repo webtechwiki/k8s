@@ -51,6 +51,22 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 - kubeproxy：调度docker容器的网络
 
+
+**CLI客户端:**
+
+- kubectl：kubectl是一个用于操作kubernetes集群的命令行接口，通过利用kubectl的各种命令可以实现各种功能
+
+
+
+**核心附件:**
+
+- CNI网络插件：flannel/calico
+- 服务发现插件：coredns
+- 服务暴露插件：traefik
+- GUI管理插件：Dashboard
+
+
+
 ## 4. 学习前提
 
 在深入学习kubernetes之前，我们应当拥有一个Kubernetes集群环境。可以根据下面的第一篇笔记教程，用自己的电脑搭建一个虚拟的Kubernetes集群环境。
@@ -58,10 +74,11 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 ## 5. 笔记目录
 
 - [1.从快速搭建k8s集群开始学习k8s](./note/kb1-build.md)
-- [2.k8s声明样式资源清单（YAML）文件](./note/kb2-yaml.md)
-- [3.namespace](./note/kb3-namespace.md)
-- [4.pod相关操作](./note/kb4-pod.md)
-- [5.Controller](./note/kb5-controller.md)
-- [6.Service](./note/kb6-service.md)
-- [7.Ingress](./note/kb7-ingress.md)
-- [8.存储](./note/kb8-storage.md)
+- [2.k8s中的基础核心概念](./note/kb2-conception.md)
+- [3.k8s声明样式资源清单（YAML）文件](./note/kb3-yaml.md)
+- [4.namespace](./note/kb4-namespace.md)
+- [5.pod相关操作](./note/kb5-pod.md)
+- [6.Controller](./note/kb6-controller.md)
+- [7.Service](./note/kb7-service.md)
+- [8.Ingress](./note/kb8-ingress.md)
+- [9.存储](./note/kb9-storage.md)
