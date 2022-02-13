@@ -254,9 +254,21 @@ kube-system   kube-scheduler-master1            1/1     Running   0          14m
 需要注意的是，如果你的列表中显示的所有pod并不是处于Running状态，你需要等待一段时间。而且，你在安装集群的过程中，最好处于一个优质的网络环境。如果你电脑配置允许，你还可以使用上文的涉及到的操作步骤，添加更多的工作节点。
 
 
+
+如果你在搭建过程中出现问题，或者因为其他原因想重置k8s集群，使用使用以下的步骤：
+```shell
+# 驱离工作节点的 pod
+kubectl drain worker1 --delete-local-data --force --ignore-daemonsets
+kubectl drain worker2 --delete-local-data --force --ignore-daemonsets
+# 删除工作节点
+kubectl delete node worker1
+kubectl delete node worker2
+# 重置集群
+kubeadm reset
+```
+
+
 至此，集群搭建完毕。从下一篇文章开始我们将继续介绍k8s基础知识
-
-
 
 > 本文原创首发自wx订阅号：**极客开发者up**，禁止转载
 

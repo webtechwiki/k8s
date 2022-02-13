@@ -1,4 +1,5 @@
 # Ingress
+
 ## 一、相关概念
 > Service对集群之外暴露端口主要方式有两种：NodePort和LoadBalancer，但是这两种方式，都有一个缺点：
 
@@ -7,7 +8,7 @@
 
 基于这两种现状，k8s提供了Ingress资源对象，Ingress值需要一个NodePort或者一个LoadBalancer就可以满足暴露多个Service的需求。工作机制大致如下图所示
 
-![./ingress.jpeg](./ingress.jpeg)
+![./ingress.jpeg](../img/ingress.jpeg)
 
 >  实际上，Ingress相当于是一个7层的负载均衡器，是k8s对反向代理的一个抽象，它的工作原理类似于Nginx，可以理解成在Ingress里建立诸多反射规则，Ingress Controller通过监听这些配置规则转化成Nginx的反向代理配置，然后对外部提供服务。在这里有两个核心概念：
 
@@ -15,10 +16,11 @@
 * Ingress controller：具体实现反向代理及负载均衡的程序，对Ingress定义的规则进行解析，根据配置规则来实现转发，实现方式有很多种，比如Nginx、Controller、Haproxy等等
 
 Ingress（以Nginx为例）的工作原理如下：
-1. 用户编写Ingress规则，说明哪个域名对应k8s集群的哪个Seivice
-2. Ingress控制器动态感知Ingress服务规则的变化，然后生成一段对应的Nginx反向代理配置
-3. Ingress控制器将会生成的Nginx配置写入到一个运行着的Nginx服务中，并且动态更新
-4. 到此为止，其实真正在工作的就是一个Nginx了，内部配置了用户定义的请求转发规则
+
+- 1. 用户编写Ingress规则，说明哪个域名对应k8s集群的哪个Seivice
+- 2. Ingress控制器动态感知Ingress服务规则的变化，然后生成一段对应的Nginx反向代理配置
+- 3. Ingress控制器将会生成的Nginx配置写入到一个运行着的Nginx服务中，并且动态更新
+- 4. 到此为止，其实真正在工作的就是一个Nginx了，内部配置了用户定义的请求转发规则
 
 ## 二、创建Ingress
 
@@ -34,26 +36,27 @@ wget https://github.com/kubernetes/ingress-nginx/blob/nginx-0.30.0/deploy/static
 # service-nodeport文件
 wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/deploy/static/provider/baremetal/service-nodeport.yaml
 ```
+
 执行kubectl创建资源命令
-```
+```shell
 kubectl apply -f ./
 ```
 
-### 2. 查看
-查看Pod：```kubectl get pods -n ingress-nginx```，返回以下内容
+### 2. 查看Ingress Controller
+查看Pod：`kubectl get pods -n ingress-nginx`，返回以下内容
 ```shell
 NAME                                        READY   STATUS    RESTARTS   AGE
 nginx-ingress-controller-5bb8fb4bb6-qnbdv   1/1     Running   0          3m23s
 ```
 
-查看Service：```kubectl get svc -n ingress-nginx```，返回以下内容
+查看Service：`kubectl get svc -n ingress-nginx`，返回以下内容
 ```shell
 NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 ingress-nginx   NodePort   10.99.166.208   <none>        80:30796/TCP,443:31737/TCP   5m22s
 ```
 
 ### 3. 创建Deployment和Service
-创建3个Nginx和3个tomcat应用和对应的两个Service，创建tomcat-nginx.yaml文件，添加以下内容：
+创建3个Nginx和3个tomcat应用和对应的两个Service，创建`tomcat-nginx.yaml`文件，添加以下内容：
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -133,8 +136,8 @@ spec:
 ```
 
 ### 4. 创建ingress-http
-创建ingress-http.yaml，添加以下内容
-```
+创建`ingress-http.yaml`，添加以下内容
+```shell
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -160,13 +163,13 @@ spec:
 
 使用以下命令进行创建
 
-```
+```shell
 kubectl create -f ingress-http.yaml
 ```
 
 创建之后使用以下命令查看
 
-```
+```shell
 kubectl get ingress -n dev
 # 或
 kubectl get ing -n dev
@@ -174,15 +177,15 @@ kubectl get ing -n dev
 
 或使用以下命令指定ingress名称查看
 
-```
+```shell
 kubectl get ingress ingress-http -n dev
 # 或
 kubectl get ing ingress-http -n dev
 ```
 
-或使用```kubectl describe ingress -n dev```指令查看详细信息，返回以下详细内容
+或使用`kubectl describe ingress -n dev`指令查看详细信息，返回以下详细内容
 
-```
+```shell
 Name:             ingress-http
 Namespace:        dev
 Address:          10.99.166.208
@@ -203,14 +206,14 @@ Events:
 ```
 ### 5. 创建ingress-https
 生成ssl证书以及密钥
-```
+```shell
 # 生成证书
 openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/C=CN/ST=GZ/O=nginx/CN=jkdev.cn"
 # 创建密钥
 kubectl create secret tls tls-secret --key tls.key --cert tls.crt
 ```
 
-添加ingress-https.yaml，添加以下内容
+添加`ingress-https.yaml`，添加以下内容
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -240,8 +243,9 @@ spec:
           servicePort: 8080
 ```
 
-## 三、Nginx转发
+## 三、Nginx转发到k8s
 使用Nginx将来自外网的请求转发给k8s集群
+
 ```shell
 upstream default_backend_traefix {
   server 10.99.166.208:80 max_fails=3 fail_timeout=10s;
