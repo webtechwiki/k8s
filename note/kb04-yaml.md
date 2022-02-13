@@ -1,10 +1,8 @@
-# k8s声明样式资源清单（YAML）文件
+# k8s资源清单文件
 
-目标
-* 掌握yaml文件的书写格式
-* 通过yaml文件实现资源清单描述方法
 
-在k8s中，一般使用yaml格式的文件创建符合我们预期的pod，这样的yaml文件被称为资源清单
+在k8s中，一般使用yaml格式的文件来定义符合我们预期的Pod，这样的yaml文件被称为资源清单文件
+
 
 ## 一、常用字段
 
@@ -54,7 +52,7 @@
 
 **spec.containers[].args**
 * 字段类型：List
-* 说明：指定容器启动命令参数，因为数组可以指定多个
+* 说明：指定容器启动命令参数，因为是数组可以指定多个
 
 **spec.containers[].workDir**
 * 字段类型：String
@@ -74,7 +72,7 @@
 
 **spec.containers[].volumeMounts[].readOnly**
 * 字段类型：String
-* 说明：设置存储卷的读写模式，true或者false，默认为读写模式
+* 说明：设置存储卷的读写模式，true或者false，默认为读写模式，可以使用true代表只读模式
 
 **spec.containers[].ports[]**
 * 字段类型：String
