@@ -1,6 +1,6 @@
 # Controller
 
-> 当我们删除Pod时是可以直接删除的，如果生产过程中误操作，Pod同样也会被轻易删除，因此我们需要在k8s集群中引入另一种概念（控制器），用于在k8s 集群中以loop方式监视Pod状态，如果发现Pod被删除，将重新拉起一个Pod，以让Pod一直保持在用户期望状态
+> 当我们删除Pod时是可以直接删除的，如果生产过程中误操作，Pod同样也会被轻易删除，因此我们需要在k8s集群中引入另一种概念（控制器，或者叫Pod控制器），用于在k8s 集群中以loop方式监视Pod状态，如果发现Pod被删除，将重新拉起一个Pod，以让Pod一直保持在用户期望状态
 
 本节目标
 * 了解Controller
@@ -31,12 +31,12 @@
 
 ## 二、相关命令
 ### 1. 创建
-新版本已经启用命令创建，我们使用资源文件创建，新建03-create-deployment-nginx-app2.yaml文件，写入如下内容：
+新版本k8s已经启用命令创建，我们使用资源文件创建，新建`create-deployment-nginx-app2.yaml`文件，写入如下内容：
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-apps
+  name: nginx-app2
   labels:
     app: nginx
 spec:
@@ -57,36 +57,36 @@ spec:
         - containerPort: 80
 ```
 使用以下命令进行创建
-```
-kubectl apply -f 03-create-deployment-nginx-app2.yaml
+```shell
+kubectl apply -f create-deployment-nginx-app2.yaml
 ```
 
 ### 2. 查看
 查看创建的deployment
-```
+```shell
 kubectl get deployment.apps
 ```
 或者查看replicas
-```
+```shell
 kubectl get rs
 ```
 或通过查看pod详情
-```
+```shell
 kubectl get pods -o wide
 ```
 
 ### 3. 删除
 查看运行的deployment控制器类型的应用
-```
+```shell
 kubectl get deployment.apps
 ```
 
 通过命令删除deployment控制器类型的应用
-```
+```shell
 kubectl delete deployment.apps nginx-app2
 ```
 
 通过资源清单删除，在二中创建的应用，可以使用以下命令删除
-```
-kubectl delete -f 03-create-deployment-nginx-app2.yaml
+```shell
+kubectl delete -f create-deployment-nginx-app2.yaml
 ```
