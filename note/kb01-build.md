@@ -161,11 +161,12 @@ docker rmi registry.aliyuncs.com/google_containers/coredns:1.6.7
 在master节点上执行初始化命令
 
 ```shell
-kubeadm init --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16  --ignore-preflight-errors=Swap
+kubeadm init --apiserver-advertise-address=192.168.64.8 --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16  --ignore-preflight-errors=Swap
 ```
 
 参数说明
 
+* ```--apiserver-advertise-address```：指定apiserver的服务IP，如果系统包含多个IP，必须选择外网IP
 * ```--service-cidr```：k8s中service网络使用的网段
 * ```--pod-network-cidr```：k8s中pod网络使用的网段
 * ```--ignore-preflight-errors```：忽略swap报错
