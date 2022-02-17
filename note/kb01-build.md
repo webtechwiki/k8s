@@ -1,6 +1,8 @@
 # 学习kubernetes，从快速搭建k8s集群开始
 
-> 我们将使用 multipass 来创建多台Ubuntu Server 18.04虚拟环境。如果你不熟悉 multipass 的基本操作，可以参考另一篇文章：[https://blog.jkdev.cn/index.php/archives/327/](https://blog.jkdev.cn/index.php/archives/327/)。 当然，除了 multipass，你还可以使用 vagtrant 来创建你的虚拟环境， vagrant 的基本操作可以参考这篇文章：[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)。如果你实在不想用这两款工具的其中之一，你可以直接使用 VirtualBox 来创建你的虚拟环境，但直接使用 VirtualBox 操作会更加繁杂，所以强烈推荐使用快速工具 multipas 或者 vagrant！
+> 我们将使用 multipass 来创建多台Ubuntu Server 18.04虚拟环境。如果你不熟悉 multipass 的基本操作，可以参考另一篇文章：[https://blog.jkdev.cn/index.php/archives/327/](https://blog.jkdev.cn/index.php/archives/327/)。 当然，除了 multipass，你还可以使用 vagtrant 来创建你的虚拟环境， vagrant 的基本操作可以参考这篇文章：[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)。
+> 
+> 如果你实在不想用这两款工具的其中之一，你可以直接使用 VirtualBox 来创建你的虚拟环境，但直接使用 VirtualBox 操作会更加繁杂，所以强烈推荐使用快速工具 multipass 或者 vagrant！
 
 本次我们将部署一个主节点（master1）和两个工作节点（worker1、worker2）的集群。为了节省电脑资源，master1、worker1、worker2每个节点分配2个cpu、2G内存、10G硬盘。这是k8s要求的最低配置，但这些配置完全足够我们用以学习，在root用户下执行相关操作。
 
