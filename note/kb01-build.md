@@ -210,7 +210,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 在拷贝好k8s的配置文件到用户家目录之后，我们需要安装网络插件。本次我们使用flannel作为集群的网络插件，将flannel配置文件从github下载保存到master1，文件地址为：[https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml](https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml)，在master1上将文件命名为kube-flannel.yml，后执行以下命令
 
 
-需要注意的是，如果我们的虚拟机包含多个IP，我们需要指定真实IP的网卡。如我们在vagrant 里创建的虚拟机，第二个网卡才是真实IP，修改flannel资源清单文件，在 `- --kube-subnet-mgr` 后面加一行参数`- --iface=eth1`，如下：
+需要注意的是，如果我们的虚拟机包含多个IP，我们需要指定真实IP的网卡。如我们在vagrant 里创建的虚拟机，第二个网卡才是真实IP，修改flannel资源清单文件，在 `- --kube-subnet-mgr` 后面加一行参数`- --iface=网卡名`，如下：
 ```YML
 # -------------
 containers:
