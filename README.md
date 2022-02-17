@@ -52,7 +52,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [08.Service](./note/kb08-service.md)
 - [09.Ingress](./note/kb09-ingress.md)
 - [10.存储](./note/kb10-storage.md)
-- [11.扩展与结语](./note/kb11-extend.md)
+- [11.扩展知识与结语](./note/kb11-extend.md)
 
 
 
