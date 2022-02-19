@@ -8,7 +8,7 @@
 
 基于这两种现状，k8s提供了Ingress资源对象，Ingress值需要一个NodePort或者一个LoadBalancer就可以满足暴露多个Service的需求。工作机制大致如下图所示
 
-![./ingress.jpeg](../img/ingress.jpeg)
+![./ingress.jpeg](./img/kb09-ingress.jpeg)
 
 >  实际上，Ingress相当于是一个7层的负载均衡器，是k8s对反向代理的一个抽象，它的工作原理类似于Nginx，可以理解成在Ingress里建立诸多反射规则，Ingress Controller通过监听这些配置规则转化成Nginx的反向代理配置，然后对外部提供服务。在这里有两个核心概念：
 

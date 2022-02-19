@@ -20,7 +20,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 下面这张图展示了一个Kubernetes的一个典型的架构，你可能看不懂，但完全没关系，我们这里只是个了解，后面再介绍其中包含的技术点。
 
-![Kubernetes](./img/Kubernetes.png)
+![Kubernetes](./img/01-ubernetes.png)
 
 
 ## 2. k8s有哪些功能？
@@ -40,20 +40,26 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 ......
 
 
-## 3. 笔记目录
-
-- [01.从快速搭建k8s集群开始学习k8s](./note/kb01-build.md)
-- [02.核心概念](./note/kb02-conception.md)
-- [03.核心组件](./note/kb03-compoents.md)
-- [04.资源清单](./note/kb04-yaml.md)
-- [05.namespace](./note/kb04-namespace.md)
-- [06.pod](./note/kb06-pod.md)
-- [07.Controller](./note/kb07-controller.md)
-- [08.Service](./note/kb08-service.md)
-- [09.Ingress](./note/kb09-ingress.md)
-- [10.存储](./note/kb10-storage.md)
-- [11.扩展知识与结语](./note/kb11-extend.md)
+## 3. 文档
 
 
+**3.1. 快速入门**
+
+- [01.从快速搭建k8s集群开始学习k8s](./01.basic/kb01-build.md)
+- [02.核心概念](./01.basic/kb02-conception.md)
+- [03.核心组件](./01.basic/kb03-compoents.md)
+- [04.资源清单](./01.basic/kb04-yaml.md)
+- [05.namespace](./01.basic/kb04-namespace.md)
+- [06.pod](./01.basic/kb06-pod.md)
+- [07.Controller](./01.basic/kb07-controller.md)
+- [08.Service](./01.basic/kb08-service.md)
+- [09.Ingress](./01.basic/kb09-ingress.md)
+- [10.存储](./01.basic/kb10-storage.md)
+- [11.扩展知识与结语](./01.basic/kb11-extend.md)
+
+
+**3.2. 快速入门**
+
+- [01.k8s进阶知识概述](./02.forward/f01-summary.md)
 
 
