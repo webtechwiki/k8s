@@ -34,7 +34,7 @@ cd /opt/certs
 ```
 
 
-（1）创建签证机构
+### 2.1. 创建签证机构（CA）信息
 
 创建`/opt/certs/ca-csr.json`文件，此文件定义签证机构（CA）的相关信息，填入以下内容
 
@@ -60,21 +60,24 @@ cd /opt/certs
 }
 ```
 
-name的相关字段：
+names 的相关字段：
 
 `CN`: Common Name，一般使用域名
-`C`: Country，国家
-`ST`: Sate，州、省
-`L`: Locality，地区、城市
+`C`: Country Code，申请单位所属国家，只能是两个字母的国家码。例如，中国只能是CN。
+`ST`: State or Province，州、省
+`L`: Locality，州名或省份名称
 `O`: Organization name，组织名称、公司名称
 `OU`: Organization Unit Name，组织单位名称、公司部门
 
 
 ca的expiry字段代表有效时间，175200h代表20年
 
-（2）创建证书公钥和私钥文件
+### 2.2. 生成根证书 的 CSR 文件和秘钥文件
 
-使用 `cfssl` 以下命令使用配置文件中，创建一个签证机构，并使用`cfssl-json`生成承载式证书
+申请数字证书之前，必须先生成证书的密钥文件和CSR文件。CSR文件是你的公钥证书原始文件，包含了你的服务器信息和你的单位信息，需要提交给CA认证中心进行审核。
+
+
+使用 `cfssl` 命令生成证书，但生成的证书内容只会输入在控制台中，所以需要使用`cfssl-json`生成承载式证书写入到文件中，如下命令
 
 ```shell
 cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
@@ -82,10 +85,9 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
 
 生成以下三个文件
 
-`ca.pem`: ca证书
-`ca-key.pem`: ca证书私钥，即ssl证书
-`ca.csr`: 
-
+`ca.csr`:  证书签名申请（Certificate Signing Request）文件
+`ca.pem`: ca公钥证书
+`ca-key.pem`: ca私钥证书
 
 
 
