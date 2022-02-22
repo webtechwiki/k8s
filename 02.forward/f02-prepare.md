@@ -1,4 +1,4 @@
-# 集群环境准备
+# k8s二进制安装环境准备
 
 在进行集群学习之前，我们先准备虚拟机环境，我们这次使用 `vagran` 来管理虚拟机，如果你电脑上还没有 vagrant 的环境，可以参考这篇文章[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)
 
