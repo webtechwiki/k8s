@@ -107,11 +107,20 @@ DNS1=10.4.7.254
 初始化工作在所有的主机上执行
 
 
-关闭selinx防火墙
+关闭selinx和防火墙
 ```shell
+# 关闭selinx
 setenforce 0
+# 关闭防火墙
 systemctl stop firewalld
 ```
+
+以上指令只是临时关闭selinux，永久关闭selinux，需要把`/etc/selinux/config`里面的`SELINUX`值修改为`disabled`，如下
+
+```shell
+SELINUX=disabled
+```
+
 
 安装epel源
 
