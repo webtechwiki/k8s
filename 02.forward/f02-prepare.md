@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   # kb11
   config.vm.define "kb11" do |kb11|
-    kb11.vm.network "private_network", ip: "10.4.7.11"
+    kb11.vm.network "public_network", ip: "10.4.7.11"
     kb11.vm.hostname = "kb11"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
   end
   # kb12
   config.vm.define "kb12" do |kb12|
-    kb12.vm.network "private_network", ip: "10.4.7.12"
+    kb12.vm.network "public_network", ip: "10.4.7.12"
     kb12.vm.hostname = "kb12"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   end
   # kb21
   config.vm.define "kb21" do |kb21|
-    kb21.vm.network "private_network", ip: "10.4.7.21"
+    kb21.vm.network "public_network", ip: "10.4.7.21"
     kb21.vm.hostname = "kb21"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
   end
   # kb22
   config.vm.define "kb22" do |kb22|
-    kb22.vm.network "private_network", ip: "10.4.7.22"
+    kb22.vm.network "public_network", ip: "10.4.7.22"
     kb22.vm.hostname = "kb22"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -52,7 +52,7 @@ Vagrant.configure("2") do |config|
   end
   # kb200
   config.vm.define "kb200" do |kb200|
-    kb200.vm.network "private_network", ip: "10.4.7.200"
+    kb200.vm.network "public_network", ip: "10.4.7.200"
     kb200.vm.hostname = "kb200"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
