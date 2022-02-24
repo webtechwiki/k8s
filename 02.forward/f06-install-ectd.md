@@ -7,7 +7,7 @@
 登录到`kb200`证书签发服务器。在本系列的第三篇中，我们已经进行了根证书的签发。现在我们需要基于证书服务器的根证书为etcd服务创建ssl证书。以下 是具体的签发过程
 
 
-**创建证书请求文件**
+**1.1. 定义证书信息**
 
 创建证书保存目录
 
@@ -21,7 +21,6 @@ cd /opt/certs/etcd
 定义证书信息，创建`ca-config.json`文件，定义证书的基本信息，写入如下内容
 
 ```json
-
 {
   "signing": {
     "default": {
@@ -63,7 +62,7 @@ cd /opt/certs/etcd
 上面的文件定义了证书的基本信息，其中`profiles`里可以包含多个档案对象，我们定了三个，在这里我们把`server`定义为服务器专用，`client`是客户端专用，`peer`是服务器与客户端通用，接下来我们将基于`peer`属性创建证书。
 
 
-创建证书请求文件`etcd-csr.json`，写入以下内容
+创建证书请求文件`etcd-peer-csr.json`，写入以下内容
 
 ```json
 {
@@ -94,4 +93,27 @@ cd /opt/certs/etcd
 - `hosts`：颁发的主机
 - `key`：定义证书类型，algo为加密类型，size为加密长度
 - `names`：证书的基本信息
+
+
+
+**1.2. 向签证机构（CA）申请证书**
+
+完成以上步骤，使用以下命令给客户端申请证书
+
+```shell
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=ca-config.json -profile=peer etcd-peer-csr.json | cfssljson -bare etcd-peer
+```
+
+## 1. 安装ectd
+
+先创建一个ectd用户，禁止该用户远程登录，并且没有家目录，如下命令
+
+```shell
+useradd -s /sbin/nologin -M etcd
+```
+
+时间：P17 10:07
+
+
+
 
