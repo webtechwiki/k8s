@@ -304,7 +304,7 @@ tcp        0      0 192.168.14.12:2380      0.0.0.0:*               LISTEN      
 启动完成之后，我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
 
 ```shell
-etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.14.12:2379,https://192.168.14.21:2379,https://192.168.14.22:2379" endpoint health --write-out=table
+./etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.14.12:2379,https://192.168.14.21:2379,https://192.168.14.22:2379" endpoint health --write-out=table
 ```
 
 
