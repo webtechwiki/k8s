@@ -90,6 +90,18 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
 `ca-key.pem`: ca私钥证书
 
 
+我们在修改ssh配置文件，支持后续操作的主机可以下载我们当前主机的文件，使用`vim /etc/ssh/sshd_config`命令修改ssh配置文件，如下
+
+```shell
+PasswordAuthentication yes
+```
+
+修改好配置文件之后使用以下命令重启服务
+
+```shell
+systemctl restart sshd
+```
+
 
 
 
