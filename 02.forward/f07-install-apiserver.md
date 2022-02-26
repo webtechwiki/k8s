@@ -211,6 +211,8 @@ mkdir -p /opt/kubernetes/server/bin/conf
 chmod +x start.sh
 ```
 
+p18 22:38
+
 
 
 
