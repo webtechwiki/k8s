@@ -1,0 +1,24 @@
+#!/bin/bash
+./kube-apiserver \
+    --apiserver-count 2 \
+    --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
+    --audit-policy-file ./conf/audit.yaml \
+    --authorization-mode RBAC \
+    --client-ca-file ./certs/ca.pem \
+    --requestheader-client-ca-file ./certs/ca.pem \
+    --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \
+    --etcd-cafile ./certs/ca.pem \
+    --etcd-certfile ./certs/client.pem \
+    --etcd-keyfile ./certs/client-key.pem \
+    --etcd-servers https://192.168.14.12:2379,https://192.168.14.21:2379,https://192.168.14.22:2379 \
+    --service-account-key-file ./certs/ca-key.pem \
+    --service-cluster-ip-range 192.168.0.0/16 \
+    --service-node-port-range 3000-29999 \
+    --kubelet-client-certificate ./certs/client.pem \
+    --kubelet-client-key ./certs/client-key.pem \
+    --log-dir /data/logs/kubernetes/kube-apiserver \
+    --tls-cert-file ./certs/apiserver.pem \
+    --tls-private-key-file ./certs/apiserver-key.pem \
+    --service-account-signing-key-file ./certs/apiserver-key.pem \
+    --service-account-issuer kubernetes.default.svc \
+    --v 2 

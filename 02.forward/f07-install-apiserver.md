@@ -182,20 +182,14 @@ mkdir -p /opt/kubernetes/server/bin/conf
 在apiserver二进制文件目录创建`startup.sh`启动脚本文件，写入以下内容
 
 ```shell
-#!/bin/bash
 ./kube-apiserver \
-    --logtostderr false \
-    --v 2 \
-    --log-dir /data/logs/kubernetes/kube-apiserver \
-
     --apiserver-count 2 \
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
-    --audit-policy-file ./config/audit.yaml \
-    --authorization-mode RBAC,Node \
-    --client-cafile ./certs/ca.pem \
+    --audit-policy-file ./conf/audit.yaml \
+    --authorization-mode RBAC \
+    --client-ca-file ./certs/ca.pem \
     --requestheader-client-ca-file ./certs/ca.pem \
-    --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServerAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \
-
+    --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \
     --etcd-cafile ./certs/ca.pem \
     --etcd-certfile ./certs/client.pem \
     --etcd-keyfile ./certs/client-key.pem \
@@ -203,49 +197,66 @@ mkdir -p /opt/kubernetes/server/bin/conf
     --service-account-key-file ./certs/ca-key.pem \
     --service-cluster-ip-range 192.168.0.0/16 \
     --service-node-port-range 3000-29999 \
-    --target-ram-mb=1024 \
     --kubelet-client-certificate ./certs/client.pem \
     --kubelet-client-key ./certs/client-key.pem \
+    --log-dir /data/logs/kubernetes/kube-apiserver \
+    --tls-cert-file ./certs/apiserver.pem \
+    --tls-private-key-file ./certs/apiserver-key.pem \
+    --service-account-signing-key-file ./certs/apiserver-key.pem \
+    --service-account-issuer kubernetes.default.svc \
+    --v 2 
+```
+
+接下在当前目录下的`conf`目录来创建一个`audit.yaml`，写入内容如下
+
+```shell
+apiVersion: audit.k8s.io/v1
+kind: Policy
+rules:
+- level: Metadata
 ```
 
 
 参数说明：
 
+`--apiserver-count`：集群中运行的apiserver的服务数量
+`--audit-log-path`：api请求的日志文件目录
+`--audit-policy-file`：定义审核策略配置的文件的路径
+`--authorization-mode`：授权模式
+`--client-ca-file`：访问apiserver时使用，客户端ca文件
 `--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
 `--v`：日志输出级别
 `--log-dir`：日志目录，如果为空，日志写在当前目录
-`--etcd-servers`：各个etcd节点的IP和端口号
+`--audit-log-maxage`：根据文件名中编码的时间戳，保留旧审核日志文件的最大天数
+`--audit-log-maxbackup`：保留旧审核日志文件的最大文件数量
+`--audit-log-maxsize`：日志循环前，文件最大小的最大M数
 `--bind-address`：--secure-port参数指定的端口号对应监听的IP地址，如果没有指定地址（0.0.0.0或者::），默认是 0.0.0.0，代表所有的网卡都在监听服务
 `--secure-port`：https服务的端口号，默认是6443
 `--advertise-address`：向集群广播的ip地址，这个ip地址必须能被集群的其他节点访问，如果不指定，将使用--bind-address，如果不指定--bind-addres，将使用默认网卡
 `--allow-privileged`：是否使用超级管理员权限创建容器，默认为false
 `--enable-admission-plugins`：允许使用的插件
-`--authorization-mode`：授权模式
-`--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书
-`--token-auth-file`：该文件用于指定api-server颁发证书的token授权
-`--service-cluster-ip-range`：创建service时，使用的虚拟网段
-`--service-node-port-range`：创建service时，服务端口使用的端口范围（默认 30000-32767）
-
-
-`--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
-`--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
-`--tls-cert-file`：访问apiserver时使用，tls证书
-`--tls-private-key-file`：访问apiserver时使用，tls证书私钥
-`--client-ca-file`：访问apiserver时使用，客户端ca文件
-`--service-account-key-file`：访问apiserver时使用，ca公钥
-`--etcd-faile`：访问etcd时使用，ectd的ca文件
+`--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书。本次我们暂未使用
+`--token-auth-file`：该文件用于指定api-server颁发证书的token授权。本次我们暂未使用
+`--etcd-servers`：各个etcd节点的IP和端口号
+`--etcd-cafile`：访问etcd时使用，ectd的ca文件
 `--etcd-certfile`：访问etcd时使用，ectd的证书文件
 `--etcd-keyfile`：访问etcd时使用，ectd的证书私钥文件
-`--audit-log-maxage`：根据文件名中编码的时间戳，保留旧审核日志文件的最大天数
-`--audit-log-maxbackup`：
-`--audit-log-maxsize`：
-`--audit-log-path`：
+`--service-cluster-ip-range`：创建service时，使用的虚拟网段
+`--service-node-port-range`：创建service时，服务端口使用的端口范围（默认 30000-32767）
+`--service-account-key-file`：包含 PEM 编码的 x509 RSA 或 ECDSA 私钥或公钥的文件，用于验证服务帐户令牌，可以是多个。如果没有指定，使用--tls-private-key-file指定的文件
+`--tls-cert-file`：访问apiserver时使用，tls证书文件
+`--tls-private-key-file`：访问apiserver时使用，tls证书私钥文件
+`--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
+`--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
+
+
+以上是我们在启动apiserver的时候常用的参数，apiserver具有很多参数，很多参数也有默认值，可以`./kube-apiserver --hep`命令查看更多的帮助。
 
 
 赋予启动简直执行权限
 
 ```shell
-chmod +x start.sh
+chmod +x startup.sh
 ```
 
 创建日志目录
@@ -279,12 +290,19 @@ stdout_event_enabled=false
 ```
 
 
+更新supervisor服务
+```shell
+supervisorctl update
+```
 
+再使用`supervisorctl status`命令查看apiserver启动状态，如果显示如下内容，代表正常服务
 
+```shell
+[root@kb21 bin]# supervisorctl status
+etcd-server-21                   RUNNING   pid 997, uptime 4:56:47
+kube-apiserver-21                RUNNING   pid 3654, uptime 0:00:55
+```
 
-某机构 P11 21:21
-
-老男孩 P18
 
 
 
