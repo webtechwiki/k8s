@@ -184,13 +184,18 @@ mkdir -p /opt/kubernetes/server/bin/conf
 ```shell
 #!/bin/bash
 ./kube-apiserver \
+    --logtostderr false \
+    --v 2 \
+    --log-dir /data/logs/kubernetes/kube-apiserver \
+
     --apiserver-count 2 \
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
     --audit-policy-file ./config/audit.yaml \
-    --authorization-mode RBAC \
+    --authorization-mode RBAC,Node \
     --client-cafile ./certs/ca.pem \
     --requestheader-client-ca-file ./certs/ca.pem \
     --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServerAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \
+
     --etcd-cafile ./certs/ca.pem \
     --etcd-certfile ./certs/client.pem \
     --etcd-keyfile ./certs/client-key.pem \
@@ -201,8 +206,33 @@ mkdir -p /opt/kubernetes/server/bin/conf
     --target-ram-mb=1024 \
     --kubelet-client-certificate ./certs/client.pem \
     --kubelet-client-key ./certs/client-key.pem \
-    --v 2
 ```
+
+
+参数说明：
+
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--v`：日志输出级别
+`--log-dir`：日志目录，如果为空，日志写在当前目录
+`--bind-address`：--secure-port参数指定的端口号对应监听的IP地址，如果没有指定地址（0.0.0.0或者::），默认是 0.0.0.0，代表所有的网卡都在监听服务
+`--secure-port`：https服务的端口号，默认是6443
+`--advertise-address`：向集群广播的ip地址，这个ip地址必须能被集群的其他节点访问，如果不指定，将使用--bind-address，如果不指定--bind-addres，将使用默认网卡
+`--allow-privileged`：是否使用超级管理员权限创建容器，默认为false
+`--service-cluster-ip-range`：创建service时，使用的虚拟网段
+`--authorization-mode`：授权模式
+`--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书
+`--enable-admission-plugins`：允许使用的插件
+
+
+
+`--etcd-servers`：各个etcd节点的IP和端口号
+
+
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
 
 
 赋予启动简直执行权限
@@ -211,13 +241,43 @@ mkdir -p /opt/kubernetes/server/bin/conf
 chmod +x start.sh
 ```
 
-p18 22:38
+创建日志目录
+
+```shell
+mkdir -p /data/logs/kubernetes/kube-apiserver
+```
+
+
+创建supervisor进程配置文件`/etc/supervisord.d/kube-apiserver.ini`
+
+```shell
+[program:kube-apiserver-21]
+directory=/opt/kubernetes/server/bin
+command=/opt/kubernetes/server/bin/startup.sh
+numprocs=1
+autostart=true
+autorestart=true
+startsecs=30
+startretries=3
+exitcodes=0,2
+stopsignal=QUIT
+stopwaitsecs=10
+user=root
+redirect_stderr=true
+stdout_logfile=/data/logs/kubernetes/kube-apiserver/apiserver.stdout.log
+stdout_logfile_maxbytes=64MB
+stdout_logfile_backups=4
+stdout_capture_maxbytes=1MB
+stdout_event_enabled=false
+```
 
 
 
 
 
+某机构 P11 07:02
 
+老男孩 P8
 
 
 
