@@ -303,6 +303,12 @@ etcd-server-21                   RUNNING   pid 997, uptime 4:56:47
 kube-apiserver-21                RUNNING   pid 3654, uptime 0:00:55
 ```
 
+此时，还可以使用`netstat -luntp | grep kube-api`命令查看网络服务的端口是否正常，如果正常，将返回如下内容
+
+```shell
+[root@kb21 bin]# netstat -luntp | grep kube-api
+tcp6       0      0 :::6443                 :::*                    LISTEN      3655/./kube-apiserv
+```
 
 
 
