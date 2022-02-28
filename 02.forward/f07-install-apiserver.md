@@ -214,25 +214,32 @@ mkdir -p /opt/kubernetes/server/bin/conf
 `--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
 `--v`：日志输出级别
 `--log-dir`：日志目录，如果为空，日志写在当前目录
+`--etcd-servers`：各个etcd节点的IP和端口号
 `--bind-address`：--secure-port参数指定的端口号对应监听的IP地址，如果没有指定地址（0.0.0.0或者::），默认是 0.0.0.0，代表所有的网卡都在监听服务
 `--secure-port`：https服务的端口号，默认是6443
 `--advertise-address`：向集群广播的ip地址，这个ip地址必须能被集群的其他节点访问，如果不指定，将使用--bind-address，如果不指定--bind-addres，将使用默认网卡
 `--allow-privileged`：是否使用超级管理员权限创建容器，默认为false
-`--service-cluster-ip-range`：创建service时，使用的虚拟网段
+`--enable-admission-plugins`：允许使用的插件
 `--authorization-mode`：授权模式
 `--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书
-`--enable-admission-plugins`：允许使用的插件
+`--token-auth-file`：该文件用于指定api-server颁发证书的token授权
+`--service-cluster-ip-range`：创建service时，使用的虚拟网段
+`--service-node-port-range`：创建service时，服务端口使用的端口范围（默认 30000-32767）
 
 
-
-`--etcd-servers`：各个etcd节点的IP和端口号
-
-
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+`--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
+`--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
+`--tls-cert-file`：访问apiserver时使用，tls证书
+`--tls-private-key-file`：访问apiserver时使用，tls证书私钥
+`--client-ca-file`：访问apiserver时使用，客户端ca文件
+`--service-account-key-file`：访问apiserver时使用，ca公钥
+`--etcd-faile`：访问etcd时使用，ectd的ca文件
+`--etcd-certfile`：访问etcd时使用，ectd的证书文件
+`--etcd-keyfile`：访问etcd时使用，ectd的证书私钥文件
+`--audit-log-maxage`：根据文件名中编码的时间戳，保留旧审核日志文件的最大天数
+`--audit-log-maxbackup`：
+`--audit-log-maxsize`：
+`--audit-log-path`：
 
 
 赋予启动简直执行权限
@@ -275,7 +282,7 @@ stdout_event_enabled=false
 
 
 
-某机构 P11 07:02
+某机构 P11 21:21
 
 老男孩 P18
 
