@@ -143,7 +143,13 @@ vrrp_instance VI_1 {
 ```
 
 
-`P19完成`
+启动服务
+```shell
+# 重启服务
+systemctl restart keepalived
+# 设置服务为开机自启
+systemctl enable keepalived
+```
 
 
 
