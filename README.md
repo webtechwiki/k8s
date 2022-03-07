@@ -65,5 +65,8 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [03.证书签发环境准备](./02.forward/f03-sign-prepare.md)
 - [04.通过二进制安装包安装docker](./02.forward/f04-install-docker.md)
 - [05.安装harhor服务](./02.forward/f05-install-harbor.md)
+- [06.安装etcd服务](./02.forward/f05-install-etcd.md)
+- [07.安装apiserver](./02.forward/f05-install-apiserver.md)
+- [08.安装L4反向代理服务](./02.forward/f05-install-agent-server.md)
 
 
