@@ -1,15 +1,18 @@
 # 安装主控制节点控制器和调度器
 
 
+因为我们的主控制节点的`apiserver`组件，没有安装在不同的主机，所以下面启动`controller-manager`和`scheduler`的时候可以不使用`tsl`证书，直接连接本地的`apiserver`即可
+
 ## 1. 安装controller-manager
 
 
-创建文件`/opt/kubernetes/server/bin/kube-controller-manager-startup.sh`，添加以下内容
+创建文件`/opt/kubernetes/server/bin/kube-controller-manager.sh`，添加以下内容
 
 ```shell
 #!/bin/sh
 ./kube-controller-manager \
   --cluster-cidr 172.7.0.0/16 \
+  --leader-elect true \
   --log-dir /data/logs/kubernetes/kube-controller-manager \
   --master http://127.0.0.1:8080 \
   --service-account-private-key-file ./certs/ca-key.pem \
@@ -27,7 +30,7 @@
 
 ```shell
 # 添加可执行权限
-chmod +x kube-controller-manager-startup.sh
+chmod +x kube-controller-manager.sh
 # 创建日志目录
 mkdir -p /data/logs/kubernetes/kube-controller-manager
 ```
@@ -38,7 +41,7 @@ mkdir -p /data/logs/kubernetes/kube-controller-manager
 ```shell
 [program:kube-controller-manager-21]
 directory=/opt/kubernetes/server/bin
-command=/opt/kubernetes/server/bin/kube-controller-manager-startup.sh
+command=/opt/kubernetes/server/bin/kube-controller-manager.sh
 numprocs=1
 autostart=true
 autorestart=true
@@ -130,5 +133,12 @@ ln -s /opt/kubernetes/server/bin/kubectl /usr/bin/kubectl
 再使用`kubectl get cs`检查集群状态，如下返回如下内容，则代表正常服务
 
 ```shell
-
+[root@kb22 bin]# kubectl get cs
+NAME                 STATUS    MESSAGE             ERROR
+controller-manager   Healthy   ok                  
+scheduler            Healthy   ok                  
+etcd-0               Healthy   {"health":"true"}   
+etcd-1               Healthy   {"health":"true"}   
+etcd-2               Healthy   {"health":"true"}   
+[root@kb22 bin]#
 ```

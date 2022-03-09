@@ -182,6 +182,7 @@ mkdir -p /opt/kubernetes/server/bin/conf
 在apiserver二进制文件目录创建`kube-apiserver.sh`启动脚本文件，写入以下内容
 
 ```shell
+#!/bin/bash
 ./kube-apiserver \
     --apiserver-count 2 \
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
