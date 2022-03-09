@@ -30,7 +30,8 @@ mv docker/* /usr/local/bin/
 
 ```json
 {
-  "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"]
+  "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"],
+  "exec-opts": ["native.cgroupdriver=systemd"]
 }
 ```
 
