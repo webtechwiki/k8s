@@ -1,19 +1,19 @@
 # 安装控制节点的apiserver
 
-搭建好etcd数据库之后，我们就可以安装apiserver组件了，在撰写这篇文档的时候，k8s最新的稳定版本是`1.23.4`，我们选择较新与稳定的`1.20.15`在`kb21`和`kb22`这两台主机安装，以下是具体的安装过程
+搭建好etcd数据库之后，我们就可以安装apiserver组件了，在撰写这篇文档的时候，我们选择`1.15.2`版本的k8s在`kb21`和`kb22`这两台主机安装，以下是具体的安装过程
 
 
 ## 1. 安装apiserver
 
 ```shell
 # 下载指定的服务器二进制包
-wget https://dl.k8s.io/v1.20.15/kubernetes-server-linux-amd64.tar.gz
+wget https://dl.k8s.io/v1.15.2/kubernetes-server-linux-amd64.tar.gz
 # 解压安装包
 tar -zxvf kubernetes-server-linux-amd64.tar.gz
 # 将安装包移到/opt目录下并根据版本重命名
-mv kubernetes /opt/kubernetes-v1.20.15
+mv kubernetes /opt/kubernetes-v1.15.2
 # 创建软连接
-ln -s /opt/kubernetes-v1.20.15/ /opt/kubernetes
+ln -s /opt/kubernetes-v1.15.2/ /opt/kubernetes
 ```
 
 
@@ -179,7 +179,7 @@ mkdir -p /opt/kubernetes/server/bin/conf
 ```
 
 
-在apiserver二进制文件目录创建`startup.sh`启动脚本文件，写入以下内容
+在apiserver二进制文件目录创建`kube-apiserver.sh`启动脚本文件，写入以下内容
 
 ```shell
 ./kube-apiserver \
@@ -197,13 +197,12 @@ mkdir -p /opt/kubernetes/server/bin/conf
     --service-account-key-file ./certs/ca-key.pem \
     --service-cluster-ip-range 192.168.0.0/16 \
     --service-node-port-range 3000-29999 \
+    --target-ram-mb=1024 \
     --kubelet-client-certificate ./certs/client.pem \
     --kubelet-client-key ./certs/client-key.pem \
     --log-dir /data/logs/kubernetes/kube-apiserver \
     --tls-cert-file ./certs/apiserver.pem \
     --tls-private-key-file ./certs/apiserver-key.pem \
-    --service-account-signing-key-file ./certs/apiserver-key.pem \
-    --service-account-issuer kubernetes.default.svc \
     --v 2 
 ```
 
@@ -256,7 +255,7 @@ rules:
 赋予启动简直执行权限
 
 ```shell
-chmod +x startup.sh
+chmod +x kube-apiserver.sh
 ```
 
 创建日志目录
@@ -271,7 +270,7 @@ mkdir -p /data/logs/kubernetes/kube-apiserver
 ```shell
 [program:kube-apiserver-21]
 directory=/opt/kubernetes/server/bin
-command=/opt/kubernetes/server/bin/startup.sh
+command=/opt/kubernetes/server/bin/kube-apiserver.sh
 numprocs=1
 autostart=true
 autorestart=true
