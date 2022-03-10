@@ -174,3 +174,38 @@ supervisorctl update
 ```shell
 yum install -y ipvsadm
 ```
+
+
+
+
+## 4. 集群的验证
+
+我们创建一个DaemonSet类型的资源，添加`nginx-ds.yaml`文件，添加以下内容
+
+```shell
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: nginx-ds
+spec:
+  template:
+    metadata:
+      labels:
+        app: nginx-ds
+    spec:
+      containers:
+      - name: my-nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+```
+
+执行资源创建命令
+
+```shell
+kubectl create -f nginx-ds.yaml
+```
+
+
+
+
