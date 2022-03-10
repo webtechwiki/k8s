@@ -181,7 +181,7 @@ docker pull kubernetes/pause
   --image-gc-low-threshold 10 \
   --kubeconfig ./conf/kubelet.kubeconfig \
   --log-dir /data/logs/kubenetes/kube-kubelet \
-  --pod-infra-container-image harbor.od.com/public/pause:latest \
+  --pod-infra-container-image kubernetes/pause:latest \
   --root-dir /data/kubelet
 ```
 

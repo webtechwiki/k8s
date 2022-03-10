@@ -188,6 +188,8 @@ mkdir -p /opt/kubernetes/server/bin/conf
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
     --audit-policy-file ./conf/audit.yaml \
     --authorization-mode RBAC \
+    --bind-address 192.168.14.21 \
+    --advertise-address 192.168.14.21 \
     --client-ca-file ./certs/ca.pem \
     --requestheader-client-ca-file ./certs/ca.pem \
     --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \

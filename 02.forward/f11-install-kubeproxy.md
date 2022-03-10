@@ -206,6 +206,12 @@ spec:
 kubectl create -f nginx-ds.yaml
 ```
 
+使用以下命令验证pod是否正常运行
+
+```shell
+kubectl get pod -o wide
+```
+
 
 
 
