@@ -169,6 +169,7 @@ docker pull kubernetes/pause
   --anonymous-auth=false \
   --cgroup-driver systemd \
   --cluster-dns 192.168.0.2 \
+  --node-ip 192.168.14.21 \
   --cluster-domain cluster.local \
   --runtime-cgroups=/systemd/system.slice \
   --kubelet-cgroups=/systemd/system.slice \
@@ -199,6 +200,9 @@ chmod +x kubelet.sh
 
 `cgroup-driver systemd`: 要与docker保持一致
 
+`cluster-dns`: 集群的dns，这里先固定写，后续会提到
+
+`node-ip`: 节点ip，和主机ip一致
 
 `fail-swap-on="false"`: k8s运算时最好把swap关闭掉，但我们其他程序可能需要，所以添加该选项，会兼容swap存在的场景
 
