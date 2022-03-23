@@ -6,6 +6,18 @@
 
 ## 1. 安装docker
 
+### 1.1. 包管理工具安装
+
+
+使用官方脚本自动安装，执行如下命令
+
+```shell
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+```
+
+
+### 1.2. 二进制安装
+
 docker二进制安装包的下载地址为：[https://download.docker.com/linux/static/stable/](https://download.docker.com/linux/static/stable/)
 
 需要注意的是，我们现在装的 docker 版本必须对应上即将安装的 k8s 版本，理论上越新的k8s版本支持的docker 版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对稳定的版本 `19.03.15`。
@@ -30,8 +42,12 @@ mv docker/* /usr/local/bin/
 
 ```json
 {
+  "storage-driver": "overlay2",
+  "insecure-registries": ["harbor.od.com"],
   "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"],
-  "exec-opts": ["native.cgroupdriver=systemd"]
+  "bip": "172.7.21.1/24",
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "live-restore": true
 }
 ```
 
