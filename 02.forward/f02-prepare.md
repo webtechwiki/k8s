@@ -150,8 +150,10 @@ yum install -y bind
 listen-on port 53 { 192.168.14.11; };
 # 允许任意主机使用解析服务
 allow-query     { any; };
-# 添加 forwarders 键， 值网关地址
+# 添加 forwarders 键， 值：网关地址
 forwarders      { 192.168.14.254; };
+# 开启dns转发
+allow-query-cache       { any; };
 # 使用递归的方式
 recursion yes;
 #关闭sec
