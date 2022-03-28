@@ -89,17 +89,17 @@ su
 NM_CONTROLLED=yes
 BOOTPROTO=none
 ONBOOT=yes
-IPADDR=10.4.7.11
+IPADDR=GATEWAY=192.168.14.165
 NETMASK=255.255.255.0
 DEVICE=eth1
 PEERDNS=no
-GATEWAY=10.4.7.254
-DNS1=10.4.7.254
+GATEWAY=192.168.14.254
+DNS1=192.168.14.254
 #VAGRANT-END
 ```
 
 
-安装完成之后，确保每台主机之间能相互连通，虚拟环境准备就完成了！
+安装完成之后，确保每台主机之间能相互连通，使用`systemctl restart network`重启网络服务，虚拟环境准备就完成了！
 
 
 ## 2. 初始化
@@ -147,11 +147,11 @@ yum install -y bind
 安装好bind之后，修改bind的配置文件`/etc/named.conf`，修改的配置参数如下
 ```shell
 # 修改服务的IP
-listen-on port 53 { 10.4.7.11; };
+listen-on port 53 { 192.168.14.11; };
 # 允许任意主机使用解析服务
 allow-query     { any; };
 # 添加 forwarders 键， 值网关地址
-forwarders      { 10.4.7.254; };
+forwarders      { 192.168.14.254; };
 # 使用递归的方式
 recursion yes;
 #关闭sec
@@ -165,13 +165,13 @@ dnssec-validation no;
 zone "host.com" IN {
 	type master;
 	file "host.com.zone";
-	allow-update { 10.4.7.1; };
+	allow-update { 192.168.14.1; };
 };
 
 zone "od.com" IN {
 	type master;
 	file "od.com.zone";
-	allow-update { 10.4.7.1; };
+	allow-update { 192.168.14.1; };
 };
 ```
 
@@ -190,12 +190,12 @@ $TTL 600 ; 10 minutes
     NS dns.host.com.
 
 $TTL 60    ;   1 minute
-dns           A      10.4.7.11
-HDSS7-11      A      10.4.7.11
-HDSS7-12      A      10.4.7.12
-HDSS7-21      A      10.4.7.21
-HDSS7-22      A      10.4.7.22
-HDSS7-200     A      10.4.7.200
+dns           A      192.168.14.11
+HDSS7-11      A      192.168.14.11
+HDSS7-12      A      192.168.14.12
+HDSS7-21      A      192.168.14.21
+HDSS7-22      A      192.168.14.22
+HDSS7-200     A      192.168.14.200
 ```
 
 
@@ -214,7 +214,7 @@ $TTL 600 ; 10 minutes
     NS dns.od.com.
 
 $TTL 60    ;   1 minute
-dns    A   10.4.7.11
+dns    A   192.168.14.11
 ```
 
 启动dns服务
@@ -242,7 +242,7 @@ netstat -luntp | grep 53
 
 查看dns是否正常解析
 ```shell
-dig -t A hdss7-21.host.com @10.4.7.11 +short
+dig -t A hdss7-21.host.com @192.168.14.11 +short
 ```
 
 如果看到正常返回IP地址，则代表解析正常。
@@ -251,7 +251,7 @@ dig -t A hdss7-21.host.com @10.4.7.11 +short
 这时候，我们需要把我们的`kb1`主机的DNS改为`我们自建的DNS服务`，修改 `/etc/sysconfig/network-scripts/ifcfg-eth1` 文件为的 DNS1 配置，如下
 
 ```shell
-DNS1=10.4.7.11
+DNS1=192.168.14.11
 ```
 
 再重启服务
