@@ -1,6 +1,6 @@
 # k8s二进制安装环境准备
 
-在进行集群学习之前，我们先准备虚拟机环境，我们这次使用 `vagran` 来管理虚拟机，如果你电脑上还没有 vagrant 的环境，可以参考这篇文章[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)
+在进行集群学习之前，我们先准备虚拟机环境，我们使用 `vagran` 来管理虚拟机，如果你电脑上还没有 vagrant 虚拟机管理工具，可以参考这篇文章[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)
 
 
 ## 1. 启动虚拟机 
@@ -12,7 +12,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   # kb11
   config.vm.define "kb11" do |kb11|
-    kb11.vm.network "public_network", ip: "10.4.7.11"
+    kb11.vm.network "public_network", ip: "192.168.14.11"
     kb11.vm.hostname = "kb11"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -22,7 +22,7 @@ Vagrant.configure("2") do |config|
   end
   # kb12
   config.vm.define "kb12" do |kb12|
-    kb12.vm.network "public_network", ip: "10.4.7.12"
+    kb12.vm.network "public_network", ip: "192.168.14.12"
     kb12.vm.hostname = "kb12"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -32,7 +32,7 @@ Vagrant.configure("2") do |config|
   end
   # kb21
   config.vm.define "kb21" do |kb21|
-    kb21.vm.network "public_network", ip: "10.4.7.21"
+    kb21.vm.network "public_network", ip: "192.168.14.21"
     kb21.vm.hostname = "kb21"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
   end
   # kb22
   config.vm.define "kb22" do |kb22|
-    kb22.vm.network "public_network", ip: "10.4.7.22"
+    kb22.vm.network "public_network", ip: "192.168.14.22"
     kb22.vm.hostname = "kb22"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -52,7 +52,7 @@ Vagrant.configure("2") do |config|
   end
   # kb200
   config.vm.define "kb200" do |kb200|
-    kb200.vm.network "public_network", ip: "10.4.7.200"
+    kb200.vm.network "public_network", ip: "192.168.14.200"
     kb200.vm.hostname = "kb200"
     # 指定核心数和内存
     config.vm.provider "virtualbox" do |v|
@@ -136,6 +136,9 @@ yum install -y wget net-tools telnet tree nmap sysstat lrzaz doc2unix bind-utils
 
 ## 3. 初始化域名解析服务器
 
+
+### 3.1. 安装域名解析服务器软件
+
 我们把 `kb11` 这台主机作为域名服务器。接下来进行初始化操作。
 
 安装bind9软件
@@ -160,6 +163,10 @@ recursion yes;
 dnssec-enable no;
 dnssec-validation no;
 ```
+
+### 3.2. 配置域名解析
+
+在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。我们对集群中的相关主机设置相关的域名解析，以便能通过域名访问到我们对应的服务器。以下是具体操作过程：
 
 
 修改区域配置文件 `/etc/named.rfc1912.zones`，覆盖默认内容如下：
@@ -270,8 +277,10 @@ systemctl restart network
 # 查询主机域
 search host.com
 # 解析服务器
-nameserver 10.4.7.11
+nameserver 192.168.14.11
 ```
+
+> 需要注意的是：本文演示的环境是 `vagrant` 里的 `centos 7`，如果我们重启虚拟机，`/etc/resolv.conf` 文件将被重置，将域名解析重置为 `vagrant` 工具本身默认的 DNS ！
 
 
 我们再使用如下指令检测是否解析正常
@@ -289,7 +298,7 @@ ping hdss7-21
 我们在 `/etc/resolv.conf` 文件中修改只是让主机临时生效，如果重启之后，系统将会根据网卡配置来指定对应的 域名解析服务器，所以永久生效的方式应当是 修改网卡 配置中的DNS域名。
 
 
-> 注意：`/etc/resolv.conf` 设置域名解析时，主机域名可以使用 `search` 标注查询的主机域，但注意 业务域名不要使用这个配置
+> 注意：`/etc/resolv.conf` 设置域名解析时，主机域名（专门用于访问主机的域名）可以使用 `search` 标注查询的主机域，但注意 业务域名（用于部署项目的域名）不要使用这个配置。
 
 
 
