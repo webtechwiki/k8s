@@ -268,10 +268,17 @@ DNS1=192.168.14.11
 systemctl restart network
 ```
 
+> 实际上，重启网络之后，我们配置的网卡会生效，但是在 vagrant 虚拟机里，默认有一个 DNS 解析。此时 `/etc/resolv.conf` 文件内容如下
+
+```shell
+```
+
+在 vagrant 里，vagrant 默认使用一个 vagrant 的 dns，那么我们自己设置的dns便成了备用dns，为了达到我们域名解析的效果，我们执行下面“4”的步骤！
+
 
 ## 4. 修改所有的主机的域名解析服务器
 
-重启网络服务之后，在客户端配置`/etc/resolv.conf`文件，改为如下内容
+将系统中配置文件`/etc/resolv.conf`，改为如下内容
 
 ```shell
 # 查询主机域
@@ -280,7 +287,16 @@ search host.com
 nameserver 192.168.14.11
 ```
 
-> 需要注意的是：本文演示的环境是 `vagrant` 里的 `centos 7`，如果我们重启虚拟机，`/etc/resolv.conf` 文件将被重置，将域名解析重置为 `vagrant` 工具本身默认的 DNS ！
+需要注意的是，本文演示的环境是 `vagrant` 里的 `centos 7`，如果我们重启虚拟机，`/etc/resolv.conf` 文件将被重置，将域名解析重置为 `vagrant` 工具本身默认的 DNS ！为了保证我们修改的配置在学习期间有效，你可以使用下列推荐的方式对虚拟机进行重启！
+
+```shell
+# 保存虚拟机镜像
+vagrant suspend
+# 恢复虚拟机镜像
+vagrant resume
+```
+
+> 建议：如果我们在个人电脑使用 vagrant ，在电脑关机之前，我们可以使用 `vagrant suspend` 保存虚拟机的快照，在电脑开机之后，使用 `vagrant resume` 恢复上次保存的快照。这个我们就可以在 vagrant 虚拟机里，继续执行上次未完成的任务。
 
 
 我们再使用如下指令检测是否解析正常
