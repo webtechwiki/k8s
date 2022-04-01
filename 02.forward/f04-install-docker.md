@@ -14,6 +14,9 @@
 使用官方脚本自动安装，执行如下命令
 
 ```shell
+# 指定版本变量
+export VERSION=19.03.15
+# 安装docker
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 ```
 
