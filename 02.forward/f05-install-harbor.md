@@ -95,6 +95,9 @@ registryctl         "/home/harbor/start.…"   registryctl         running (heal
 
 ## 4. 安装nginx
 
+
+### 4.1. 源码安装
+
 nginx的源代码的下载地址是：[https://nginx.org/en/download.html](https://nginx.org/en/download.html)
 
 
@@ -138,6 +141,77 @@ server {
 /usr/local/nginx/sbin/nginx
 ```
 
+### 4.2. yum软件包安装
+
+
+**设置反向代理**
+
+可以yum安装命令如下
+
+```shell
+yum install -y nginx
+```
+
+
+添加配置文件`/etc/nginx/conf.d/harbor.od.conf`，并加入以下内容
+
+```shell
+server {
+	listen  80;
+	server_name  harbor.od.com;
+	client_max_body_size  1000m;
+	location / {
+		proxy_pass http://127.0.0.1:180;
+	}
+}
+```
+
+配置好之后，使用以下命令启动nginx
+
+```shell
+# 检测配置文件是否正确
+nginx -t
+# 启动nginx服务
+nginx
+```
+
+
+**开启IP转发功能**
+
+如果我们的IP没有开启转发功能，实际上harbor对于外网的服务可能是不正常的， 使用 `sysctl net.ipv4.ip_forward` 命令查看 IP是否已开启了转发功能，如果返回以下内容，代表没有正常开启
+
+```shell
+net.ipv4.ip_forward = 0
+```
+
+
+如果没有开启，使用以下步骤进行开启
+
+第一步， 编辑`/etc/sysctl.conf`文件，添加以下内容：
+
+```shell
+net.ipv4.ip_forward = 1 # 这个配置改成1，0是没打开
+```
+
+
+第二步，重启网络：
+
+
+```shell-script
+service network restart
+```
+
+
+第三步，修改DNS：
+
+当我们重启网络服务之后，虚拟机的DNS重置会vagrant的DNS，我们修改DNS配置文件`/etc/resolv.conf`，将DNS服务器修改为如下
+
+```shell
+search host.com
+nameserver 192.168.14.11
+```
+
+
 
 ## 5. 添加域名解析
 
@@ -158,16 +232,16 @@ $TTL 600 ; 10 minutes
 $TTL 60    ;   1 minute
 dns    A   10.4.7.11
 ; 添加harbor的解析
-harbor    A   10.4.7.200
+harbor    A   192.168.14.200
 ```
 
-使用`systemctl restart named`重启域名解析服务，并使用`dig -t A harbor.od.com +short`，如果正常返回`10.4.7.200`则代表解析成功。此时，harbor已经安装成功了，如果我们的电脑本身解析 `harbor.od.com` 到kb200这台主机的话，此时我们能正常访问harbor的web服务。
+使用`systemctl restart named`重启域名解析服务，并使用`dig -t A harbor.od.com +short`，如果正常返回`192.168.14.200`则代表解析成功。此时，harbor已经安装成功了，如果我们的电脑本身解析 `harbor.od.com` 到kb200这台主机的话，此时我们能正常访问harbor的web服务。
 
 
 
 ## 6. 推送镜像
 
-harhor服务安装成功后，我们尝试将镜像推送到harbor中，使用`docker login harbor.od.com`命令登录到harbor。账号是`admin`，密码是配置文件中的`harbor123456`，如果返回类似如下内容，代表登录成功
+harhor服务安装成功后，我们进入已经安装好docker的`kb21`主机或者`kb22`主机，尝试将镜像推送到harbor中，使用`docker login harbor.od.com`命令登录到harbor。账号是`admin`，密码是配置文件中的`harbor123456`，如果返回类似如下内容，代表登录成功
 
 ```shell
 [root@kb200 harbor]# docker login harbor.od.com
