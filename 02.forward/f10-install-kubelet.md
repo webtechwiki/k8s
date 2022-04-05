@@ -3,7 +3,7 @@
 
 ## 1. 签发证书
 
-kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机，下面将为kubectl创建ssl证书
+kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机，下面将为`kubelet`创建ssl证书
 
 
 创建证书信息文件`/opt/certs/kubelet/kubelet-scr.json`文件，添加以下内容
@@ -39,7 +39,7 @@ kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机
 使用以下命令创建证书
 
 ```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server kubelet-scr.json | cfssljson -bare kubele
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server kubelet-scr.json | cfssljson -bare kubelet
 ```
 
 
@@ -154,7 +154,7 @@ kubectl get clusterrolebinding k8s-node -o yaml
 ## 4. 配置kubelet启动脚本
 
 
-在让kubelet启动之前，我们需要有一个基础的pause镜像，以下是拉取命令，该镜像负责其k8s集群中pod启动之前的初始化操作
+接下来在`kb21`和`kb22`上启动kubelet，在让kubelet启动之前，我们需要有一个基础的pause镜像，以下是拉取命令，该镜像负责其k8s集群中pod启动之前的初始化操作
 
 ```shell
 docker pull kubernetes/pause
@@ -255,6 +255,19 @@ stdout_capture_maxbytes=1MB
 stdout_event_enabled=false
 ```
 
+给脚本添加可执行权限
+
+```shell
+chmod +x kubelet.sh
+```
+
+
+更新supervisord，如下命令
+
+```shell-script
+supervisorctl update
+```
+
 
 此时，服务已经正常运行了，可以使用以下命令查看节点信息
 
@@ -284,9 +297,6 @@ kubectl label node kb22 node-role.kubernetes.io/node=
 ```
 
 
-
-
-> 已完成，可能需要解决INTERNAL-IP显示为一样的问题
 
 
 

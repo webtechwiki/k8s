@@ -180,7 +180,7 @@ yum install -y ipvsadm
 
 ## 4. 集群的验证
 
-我们创建一个DaemonSet类型的资源，添加`nginx-ds.yaml`文件，添加以下内容
+在两个节点都启动好kube-proxy服务之后，我们来验证集群。创建一个DaemonSet类型的资源，添加`nginx-ds.yaml`文件，添加以下内容
 
 ```shell
 apiVersion: extensions/v1beta1
@@ -212,6 +212,19 @@ kubectl create -f nginx-ds.yaml
 kubectl get pod -o wide
 ```
 
+如果返回如下内容，代表集群正常
+
+```shell
+[root@kb21 yml]# kubectl get pod -o wide
+NAME             READY   STATUS    RESTARTS   AGE   IP           NODE   NOMINATED NODE   READINESS GATES
+nginx-ds-mzxrv   1/1     Running   0          12s   172.7.22.2   kb22   <none>           <none>
+nginx-ds-sdfwt   1/1     Running   0          12s   172.7.21.2   kb21   <none>           <none>
+```
+
+加入我们现在在`kb21`这台主机上，使用`curl http://172.7.21.2`命令检测新建的服务是否正常，如果返回如下nginx相关的提示信息，代表kb21这个节点服务正常。
+
+
+但是如果我们在`kb21`上使用`curl http://172.7.22.2`去检测`kb22`这个节点，会发现访问不到。原因是这两个节点上的容器在各自的虚拟网络内，我们将到后续章节继续解决不同节点的容器网络互相访问的问题！
 
 
 
