@@ -18,7 +18,7 @@ mkdir -p /opt/certs/etcd
 cd /opt/certs/etcd
 ```
 
-定义证书信息，创建`ca-config.json`文件，定义证书的基本信息，写入如下内容
+我们先在`/opt/certs/`创建`ca-config.json`文件，定义证书的基本信息，写入如下内容
 
 ```json
 {
@@ -64,7 +64,7 @@ cd /opt/certs/etcd
 `peer`：是服务器与客户端交换数据，都需要证书，接下来我们将基于`peer`属性创建证书。
 
 
-创建证书请求文件`etcd-peer-csr.json`，写入以下内容
+接下来在`/opt/certs/etcd`目录创建证书请求文件`etcd-peer-csr.json`，写入以下内容
 
 ```json
 {
@@ -103,7 +103,7 @@ cd /opt/certs/etcd
 完成以上步骤，使用以下命令给客户端申请证书
 
 ```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=ca-config.json -profile=peer etcd-peer-csr.json | cfssljson -bare etcd-peer
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer etcd-peer-csr.json | cfssljson -bare etcd-peer
 ```
 
 ## 2. 安装ectd
@@ -251,6 +251,8 @@ stdout_logfile_backups=4
 stdout_capture_maxbytes=1MB
 stdout_event_enabled=false
 ```
+
+> 注意：在不同的主机上使用不同的服务名称，这样好辨别，如kb12使用`etcd-server-12`，如kb21使用`etcd-server-21`
 
 相关参数：
 
