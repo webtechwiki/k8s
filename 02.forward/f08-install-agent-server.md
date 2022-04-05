@@ -15,8 +15,6 @@ yum install nginx-mod-stream -y
 安装完成之后，我们需要在nginx的配置文件`/etc/nginx/nginx.conf`加载`stream`添加四层反向代码规则
 
 ```shell
-# 加载stream模块
-load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
 # 设置代理规则
 stream {
 	upstream kube-apiserver {
@@ -32,6 +30,13 @@ stream {
 }
 ```
 
+如果使用手动编译的方式安装`stream`模块，需要手动加载如下代码
+
+```shell-script
+# 加载stream模块
+load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
+```
+
 通过以上的配置可知，我们将`kb11`和`kb12`本机的7443端口反向代码到了`kb21`和`kb22`的6443端口。在两台主机上配置好规则之后，通过`nginx -t`命令检查配置结果，如果输出以下内容代表配置正确
 
 ```shell
@@ -40,6 +45,15 @@ nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 
+
+配置成功之后，启动nginx，如下指令
+
+```shell-script
+# 启动ginx
+nginx
+# 让nginx开机自启
+systemctl enable nginx
+```
 
 ## 2. 安装keepalived
 
