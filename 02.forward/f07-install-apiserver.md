@@ -133,12 +133,12 @@ mkdir -p /opt/kubernetes/server/bin/certs
 # 进入证书目录
 cd /opt/kubernetes/server/bin/certs
 # 从证书服务器下载证书
-scp root@HDSS7-200.host.com:/opt/certs/ca.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/ca-key.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubernetes/apiserver.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubernetes/apiserver-key.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubernetes/client.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubernetes/client-key.pem ./
+scp root@kb200.host.com:/opt/certs/ca.pem ./
+scp root@kb200.host.com:/opt/certs/ca-key.pem ./
+scp root@kb200.host.com:/opt/certs/kubernetes/apiserver.pem ./
+scp root@kb200.host.com:/opt/certs/kubernetes/apiserver-key.pem ./
+scp root@kb200.host.com:/opt/certs/kubernetes/client.pem ./
+scp root@kb200.host.com:/opt/certs/kubernetes/client-key.pem ./
 # 创建apiserver启动配置文件目录
 mkdir -p /opt/kubernetes/server/bin/conf
 ```

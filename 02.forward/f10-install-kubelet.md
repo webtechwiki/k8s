@@ -53,8 +53,8 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 ```shell
 cd /opt/kubernetes/server/bin/certs
-scp root@HDSS7-200.host.com:/opt/certs/kubelet/kubelet-key.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubelet/kubelet.pem ./
+scp root@kb200.host.com:/opt/certs/kubelet/kubelet-key.pem ./
+scp root@kb200.host.com:/opt/certs/kubelet/kubelet.pem ./
 ```
 
 

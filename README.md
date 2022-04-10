@@ -72,6 +72,8 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [10.安装kubectl](./02.forward/f10-install-kubelet.md)
 - [11.安装kube-proxy](./02.forward/f11-install-kubeproxy.md)
 - [12.回顾cfssl证书工具](./02.forward/f12-cfssl-review.md)
-- [13.kubectl命令行工具](./02.forward/f13-kubectl-command.md)
+- [13.声明式资源管理方法](./02.forward/f13-kubectl-command.md)
+- [14.陈述式资源管理方法](./02.forward/f14-kubectl-yaml.md)
+- [15.CNI网络插件](./02.forward/f14-cni-plugin.md)
 
 

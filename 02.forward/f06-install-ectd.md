@@ -123,21 +123,21 @@ useradd -s /sbin/nologin -M etcd
 
 ```shell
 # 下载对应版本
-wget https://github.com/etcd-io/etcd/releases/download/v3.4.18/etcd-v3.4.18-linux-amd64.tar.gz
+wget https://github.com/etcd-io/etcd/releases/download/v3.1.18/etcd-v3.1.18-linux-amd64.tar.gz
 # 解压
-tar -zxvf etcd-v3.4.18-linux-amd64.tar.gz
+tar -zxvf etcd-v3.1.18-linux-amd64.tar.gz
 # 将etc移到/opt目录，并修改etcd目录名
-mv etcd-v3.4.18-linux-amd64/ /opt/etcd-v3.4.18
+mv etcd-v3.1.18-linux-amd64/ /opt/etcd-v3.1.18
 # 创建etcd软链接
-ln -s /opt/etcd-v3.4.18 /opt/etcd
+ln -s /opt/etcd-v3.1.18 /opt/etcd
 # 创建etcd证书目录和数据目录
 mkdir -p /opt/etcd/certs /data/etcd /data/logs/etcd-server
 # 进入证书目录
 cd /opt/etcd/certs
 # 从证书服务器下载证书
-scp root@HDSS7-200.host.com:/opt/certs/ca.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/etcd/etcd-peer.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/etcd/etcd-peer-key.pem ./
+scp root@kb200.host.com:/opt/certs/ca.pem ./
+scp root@kb200.host.com:/opt/certs/etcd/etcd-peer.pem ./
+scp root@kb200.host.com:/opt/certs/etcd/etcd-peer-key.pem ./
 ```
 
 此时，使用`ls -l`命令可查看到两张证书和一个私钥文件，如下内容

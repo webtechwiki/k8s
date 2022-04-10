@@ -178,11 +178,11 @@ $TTL 600 ; 10 minutes
 
 $TTL 60    ;   1 minute
 dns           A      192.168.14.11
-HDSS7-11      A      192.168.14.11
-HDSS7-12      A      192.168.14.12
-HDSS7-21      A      192.168.14.21
-HDSS7-22      A      192.168.14.22
-HDSS7-200     A      192.168.14.200
+kb11      A      192.168.14.11
+kb12      A      192.168.14.12
+kb21      A      192.168.14.21
+kb22      A      192.168.14.22
+kb200     A      192.168.14.200
 ```
 
 
@@ -229,7 +229,7 @@ netstat -luntp | grep 53
 
 查看dns是否正常解析
 ```shell
-dig -t A hdss7-21.host.com @192.168.14.11 +short
+dig -t A kb21.host.com @192.168.14.11 +short
 ```
 
 如果看到正常返回IP地址，则代表解析正常。
@@ -282,9 +282,9 @@ vagrant resume
 
 我们再使用如下指令检测是否解析正常
 ```shell
-ping hdss7-21.host.com
+ping kb21.host.com
 # 因为设置了 search ，也可以直接ping 短域名
-ping hdss7-21
+ping kb21
 ```
 
 如果返回如下图内容，这代表dns正常解析

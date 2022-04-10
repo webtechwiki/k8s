@@ -44,8 +44,8 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 下载证书文件
 ```shell
-scp root@HDSS7-200.host.com:/opt/certs/kubeproxy/kube-proxy-client.pem ./
-scp root@HDSS7-200.host.com:/opt/certs/kubeproxy/kube-proxy-client-key.pem ./
+scp root@kb200.host.com:/opt/certs/kubeproxy/kube-proxy-client.pem ./
+scp root@kb200.host.com:/opt/certs/kubeproxy/kube-proxy-client-key.pem ./
 ```
 
 
