@@ -74,6 +74,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [12.回顾cfssl证书工具](./02.forward/f12-cfssl-review.md)
 - [13.声明式资源管理方法](./02.forward/f13-kubectl-command.md)
 - [14.陈述式资源管理方法](./02.forward/f14-kubectl-yaml.md)
-- [15.CNI网络插件](./02.forward/f14-cni-plugin.md)
+- [15.flannel网络插件](./02.forward/f15-flannel-plugin.md)
+- [16.flannel模型介绍](./02.forward/f16-flannel-model.md)
 
 

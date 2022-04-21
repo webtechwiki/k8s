@@ -1,4 +1,4 @@
-# CNI网络插件
+# flannel网络介绍
 
 
 k8s设计了网络模型，但确将它的实现交给了网络插件，CNI网络插件主要的功能就是实现POD资源能够跨宿主机进行通信，插件的CNI网络插件如下
@@ -123,6 +123,12 @@ stdout_event_enabled=false
 
 ```shell
 ./etcdctl set /coreos.com/network/config '{"Network":"172.7.0.0/16","Backend":{"Type":"host-gw"}}'
+```
+
+这条命令表示设置flannel的网络模型为`host-gw`模型，flannel将会读取到键名`/coreos.com/network/config`对应的值。如果我们要确保etcd已经设置了对应的键值对，可以使用下名这个命令查看
+
+```shell
+./etcdctl get /coreos.com/network/config
 ```
 
 
