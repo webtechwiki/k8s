@@ -77,5 +77,6 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [15.flannel网络插件](./02.forward/f15-flannel-plugin.md)
 - [16.flannel模型介绍](./02.forward/f16-flannel-model.md)
 - [17.flannel优化](./02.forward/f16-flannel-optimize.md)
+- [18.使用coredns实现服务发现](./02.forward/f18-coredns.md)
 
 
