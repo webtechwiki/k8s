@@ -19,7 +19,7 @@
 - 在k8s里，抽象出了Service资源，通过标签选择器，关联一组Pod
 - 抽象出了集群网络，通过相对固定的“集群IP”，使服务接入点固定
 
-那么如何自定关联Service资源的“名称”和“集群网络IP”，从而达到服务被集群自动发现的目的呢？
+那么如何自动关联Service资源的“名称”和“集群网络IP”，从而达到服务被集群自动发现的目的呢？
 
 在传统的DNS模型里，我们可以通过`hdss7-21.host.com`解析道`192.168.14.21`，实际上，在集群里我们也可以建立类似的模型，让 `nginx-ds`自动关联到一个虚拟的Service IP。在k8s里，实现服务发现的方式就是通过DNS。以下工具可以实现k8s的dns服务
 
@@ -90,7 +90,7 @@ systemctl restart named
 在使用以下命令检查是否已经正常解析
 
 ```shell
-dig -t A kb21.host.com @192.168.14.11 +short
+dig -t A k8s-yaml.od.com @192.168.14.11 +short
 ```
 
 如果有返回，则代表已经设置成功。
@@ -174,7 +174,7 @@ data:
         health
         ready
         kubernetes cluster.local 192.168.0.0/16  #service资源cluster地址
-        forward . 10.4.7.11   #上级DNS地址
+        forward . 192.168.14.11   #上级DNS地址
         cache 30
         loop
         reload
@@ -208,7 +208,7 @@ spec:
       serviceAccountName: coredns
       containers:
       - name: coredns
-        image: harbor.zq.com/public/coredns:v1.6.1
+        image: coredns/coredns:1.6.1
         args:
         - -conf
         - /etc/coredns/Corefile
@@ -278,10 +278,10 @@ spec:
 我们再回到`kb21`这台集群节点主机上，使用以下命令将资源挨个创建出来
 
 ```shell
-kubectl create -f http://k8s-yaml.zq.com/coredns/rbac.yaml
-kubectl create -f http://k8s-yaml.zq.com/coredns/cm.yaml
-kubectl create -f http://k8s-yaml.zq.com/coredns/dp.yaml
-kubectl create -f http://k8s-yaml.zq.com/coredns/svc.yaml
+kubectl create -f http://k8s-yaml.od.com/coredns/rbac.yaml
+kubectl create -f http://k8s-yaml.od.com/coredns/cm.yaml
+kubectl create -f http://k8s-yaml.od.com/coredns/dp.yaml
+kubectl create -f http://k8s-yaml.od.com/coredns/svc.yaml
 ```
 
 验证服务
@@ -299,11 +299,11 @@ kubectl get svc -o wide -n kube-system
 # 验证公网解析
 dig -t A www.baidu.com @192.168.0.2 +short
 # 验证自建解析
-dig -t A harbor.zq.com @192.168.0.2 +short
+dig -t A harbor.od.com @192.168.0.2 +short
 ```
 
-coredns已经能解析外网域名了,因为coredns的配置中,写了他的上级DNS为10.4.7.11,如果它自己解析不出来域名,会通过递归查询一级级查找
-但coredns我们不是用来做外网解析的,而是用来做service名和serviceIP的解析
+coredns已经能解析外网域名了，在coredns的配置中，我们写了他的上级DNS为`192.168.14.11`，如果它自己解析不出来域名，会通过递归查询一级级查找。
+但要注意的是，coredns我们不是用来做外网解析的，而是用来做service名和serviceIP的解析
 
 
 ## 4. 验证服务
@@ -312,7 +312,7 @@ coredns已经能解析外网域名了,因为coredns的配置中,写了他的上�
 我们先将集群中自己创建的pod都删除掉，再重新创建一个`deployment`类型的pod
 
 ```shell
-kubectl create deployment nginx-dp --image=nginx:alpine -n kube-public
+kubectl create deployment nginx-dp --image=nginx -n kube-public
 ```
 
 给pod创建一个service
@@ -320,6 +320,22 @@ kubectl create deployment nginx-dp --image=nginx:alpine -n kube-public
 ```shell
 kubectl expose deployment nginx-dp --port=80 -n kube-public
 ```
+
+使用下面的命令查看我们创建的service
+
+```shell
+kubectl get svc -n kube-public
+```
+
+
+可以看到如下的返回内容
+
+```shell
+[root@kb21 vagrant]# kubectl get svc -n kube-public
+NAME       TYPE        CLUSTER-IP        EXTERNAL-IP   PORT(S)   AGE
+nginx-dp   ClusterIP   192.168.163.187   <none>        80/TCP    29h
+```
+
 
 我们先使用`dig -t A nginx-dp @192.168.0.2 +short`命令进行验证，发现无返回数据，其实是需要service的完整域名:`服务名.名称空间.svc.cluster.local.`，再使用以下命令进行验证，数据就正常了
 
@@ -330,7 +346,8 @@ dig -t A nginx-dp.kube-public.svc.cluster.local. @192.168.0.2 +short
 > 可以看到我们没有手动添加任何解析记录，我们nginx-dp的service资源的IP，已经被解析了，这就是coredns帮我们做的
 
 
-如果我们进入pod里面，使用`ping nginx-dp`进行测试，发现是通的，原因是我们启动的pod，dns地址是我们前面设置的coredns地址，以及搜索域中已经添加了搜索域：`kube-public.svc.cluster.local`。
+
+如果我们进入pod里面，使用`curl nginx-dp`进行测试，发现是通的，原因是我们启动的pod，dns地址是我们前面设置的coredns地址，以及搜索域中已经添加了搜索域：`kube-public.svc.cluster.local`。
 
 
 这样，我们就解决了集群内部服务相互访问的问题，在后续，我们将介绍如何将我们的内部服务暴露在外网。
