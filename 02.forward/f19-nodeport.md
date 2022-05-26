@@ -110,9 +110,78 @@ ipvsadm -D -u 192.168.0.2:53
 
 ### 2.3. 使用NodePort做服务暴露
 
-> p12  08:48
+创建资源文件`nginx-ds-svc-nodeport.yml`，并添加以下内容
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginx-ds
+  name: nginx-ds
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    nodePort: 8000
+    name: http
+  selector:
+    app: nginx-ds
+  sessionAffinity: None
+  type: NodePort
+```
+
+上面的资源文件定义了NodePort类型的Service，将宿主机的`8000`端口绑定到名为`nginx-ds`的pod，使用以下命令创建service
+
+```shell
+kubectl create -f nginx-ds-svc-nodeport.yml
+```
 
 
+查看已创建service，如下命令
+
+```shell
+kubectl get svc -o wide
+```
+
+我们还可以k8s节点使用以下命令查看 8000 端口 的使用情况
+
+```shell
+netstat -luntp | grep 8000
+```
+
+可以看到如下的返回内容
+
+```shell
+[root@kb21 vagrant]# netstat -luntp | grep 8000
+tcp6       0      0 :::8000                 :::*                    LISTEN      31190/./kube-proxy
+```
+
+此时我们宿主机的 8000 端口映射到 pod 上。我们可以通过宿主机8000端口成功访问到 nginx。如果我们使用如下命令删除nodeport，将不再能通过宿主机 8000 端口来访问服务。
+
+```shell
+kubectl delete -f nginx-ds-svc-nodeport.yml
+```
+
+### 2.4. 恢复kube-proxy的初始配置
+
+
+使用Nodeport向外望暴露服务有一个严重的缺点就是，每当暴露一个服务就会占用一个宿主机端口。所以 这个服务暴露方式并不适合常规的需求。在后面一节我们会介绍 Ingress 来代替 Nodeport。我们需要在不同的集群节点的 kube-proxy 启动参数设置为初始值，以`kb21`节点为示例，启动脚本内容如下
+
+
+```shell
+#!/bin/bash
+./kube-proxy \
+  --cluster-cidr 172.7.0.0/16 \
+  --hostname-override kb21 \
+  --proxy-mode=ipvs \
+  --ipvs-scheduler=nq \
+  --kubeconfig ./conf/kube-proxy.kubeconfig
+```
+
+
+重启服务代理模式又回到初始状态
 
 
 
