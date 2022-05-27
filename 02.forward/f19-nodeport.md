@@ -172,6 +172,8 @@ kubectl delete -f nginx-ds-svc-nodeport.yml
 
 重启服务代理模式又回到初始状态
 
+> 但要注意的是，修改代理模式又改回来之后，集群可能出现问题，我们可以重启一下 docker，并重启一下kubelet。
+
 
 
 

@@ -198,9 +198,30 @@ kubectl create -f http://k8s-yaml.od.com/traefik/svc.yaml
 kubectl create -f http://k8s-yaml.od.com/traefik/ingress.yaml
 ```
 
+创建好资源之后，使用如下命令查看是否正常
+
+```shell
+kubectl get pods -n kube-system -o wide
+```
+
+
+如果看到traefik处于running状态中，则代表服务正常。我们继续使用以下命令查看81端口的服务
+
+```shell
+netstat -luntp | grep 81
+```
+
+
+如果返回类似如下内容，代表docker的代理正常服务
+
+```shell
+[root@kb21 vagrant]# netstat -luntp | grep 81
+tcp6       0      0 :::81                   :::*                    LISTEN      16694/docker-proxy
+```
+
 
 ## 3. 在往外入口做nginx方向代理
 
 
-> p13 16:13
+> p13 38:37
 
