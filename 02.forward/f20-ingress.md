@@ -178,7 +178,7 @@ metadata:
     kubernetes.io/ingress.class: traefik
 spec:
   rules:
-  - host: traefik.zq.com
+  - host: traefik.od.com
     http:
       paths:
       - path: /
@@ -212,7 +212,7 @@ netstat -luntp | grep 81
 ```
 
 
-如果返回类似如下内容，代表docker的代理正常服务
+如果返回类似如下内容，代表traefik正常服务
 
 ```shell
 [root@kb21 vagrant]# netstat -luntp | grep 81
@@ -222,6 +222,79 @@ tcp6       0      0 :::81                   :::*                    LISTEN      
 
 ## 3. 在往外入口做nginx方向代理
 
+### 3.1. 反向代理
 
-> p13 38:37
+
+我们在`kb11`和`kb12`上做反向代理，将泛域名的解析都转发到trafik上，创建文件`/etc/nginx/conf.d/od.com.conf`文件，写入如下内容：
+
+```shell
+upstream default_backend_traefik {
+    server 192.168.14.21:81    max_fails=3 fail_timeout=10s;
+    server 192.168.14.22:81    max_fails=3 fail_timeout=10s;
+}
+server {
+    server_name *.od.com;
+  
+    location / {
+        proxy_pass http://default_backend_traefik;
+        proxy_set_header Host       $http_host;
+        proxy_set_header x-forwarded-for $proxy_add_x_forwarded_for;
+    }
+}
+```
+
+重启nginx服务
+```shell
+nginx -t
+nginx -s reload
+```
+
+
+### 3.2. 测试服务
+
+需要将traefik 服务的解析记录添加的DNS解析中,注意是绑定到VIP上，编写`/var/named/od.com.zone`，添加`traefik`子域的解析，序列号往前进位，如下
+
+
+```shell
+traefik            A    192.168.14.10
+```
+
+
+重启named服务
+
+```shell
+systemctl restart named
+```
+
+验证域名解析
+
+```shell
+dig -t A traefik.od.com +short
+```
+
+
+如果正常有内容返回，代表解析正常
+
+### 3.3. 集群验证
+
+在集群外,访问`http://traefik.od.com`,如果能正常显示web页面.说明我们已经暴露服务成功
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
