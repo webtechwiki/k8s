@@ -38,11 +38,11 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 ### 3.1 快速入门
 
 - [01.使用kubeadm快速搭建k8s集群](./01.basic/kb01-build.md)
-- [02.核心概念](./01.basic/kb02-conception.md)
-- [03.核心组件](./01.basic/kb03-compoents.md)
-- [04.资源清单](./01.basic/kb04-yaml.md)
-- [05.namespace](./01.basic/kb04-namespace.md)
-- [06.pod](./01.basic/kb06-pod.md)
+- [02.k8s中的核心概念](./01.basic/kb02-conception.md)
+- [03.k8s中的核心组件](./01.basic/kb03-compoents.md)
+- [04.k8s资源清单文件](./01.basic/kb04-yaml.md)
+- [05.k8s名称空间](./01.basic/kb05-namespace.md)
+- [06.pod的相关操作](./01.basic/kb06-pod.md)
 - [07.Controller](./01.basic/kb07-controller.md)
 - [08.Service](./01.basic/kb08-service.md)
 - [09.Ingress](./01.basic/kb09-ingress.md)
