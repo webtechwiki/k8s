@@ -1,32 +1,35 @@
 # Ingress
 
 ## 一、相关概念
-> Service对集群之外暴露端口主要方式有两种：NodePort和LoadBalancer，但是这两种方式，都有一个缺点：
 
-* NodePort方式的缺点是会占用很多集群的端口，那么集群服务器变多的时候，这个缺点愈发明显
-* LoadBalancer的缺点是每个Service需要一个LoadBalancer，浪费、麻烦，并且需要k8s之外的设备支持
+Service对集群之外暴露端口主要方式有两种：`NodePort`和`LoadBalancer`，但是这两种方式，都有一个缺点
+
+- `NodePort`方式的缺点是会占用很多集群的端口，集群服务器变多的时候，这个缺点愈发明显
+- `LoadBalancer`的缺点是每个Service需要一个`LoadBalancer`，浪费、麻烦，并且需要k8s之外的设备支持
 
 基于这两种现状，k8s提供了Ingress资源对象，Ingress值需要一个NodePort或者一个LoadBalancer就可以满足暴露多个Service的需求。工作机制大致如下图所示
 
 ![./ingress.jpeg](./img/kb09-ingress.jpeg)
 
->  实际上，Ingress相当于是一个7层的负载均衡器，是k8s对反向代理的一个抽象，它的工作原理类似于Nginx，可以理解成在Ingress里建立诸多反射规则，Ingress Controller通过监听这些配置规则转化成Nginx的反向代理配置，然后对外部提供服务。在这里有两个核心概念：
+实际上，Ingress相当于是一个7层的负载均衡器，是k8s对反向代理的一个抽象概念，它的工作原理类似于Nginx，可以理解成在Ingress里建立诸多反射规则，Ingress Controller通过监听这些配置规则转化成Nginx的反向代理配置，然后对外部提供服务。在这里有两个核心概念
 
-* Ingress：k8s中的一个抽象，作用是定义请求如何转发到Service的规则
-* Ingress controller：具体实现反向代理及负载均衡的程序，对Ingress定义的规则进行解析，根据配置规则来实现转发，实现方式有很多种，比如Nginx、Controller、Haproxy等等
+- `Ingress`: k8s中的一个抽象概念，作用是定义请求转发到Service的规则
+- `Ingress controller`: 具体实现反向代理及负载均衡的程序，对Ingress定义的规则进行解析，根据配置规则来实现转发，实现方式有很多种，比如Nginx、Controller、Haproxy等等。
 
-Ingress（以Nginx为例）的工作原理如下：
+Ingress（以Nginx为例）的工作原理如下
 
 - 1. 用户编写Ingress规则，说明哪个域名对应k8s集群的哪个Seivice
 - 2. Ingress控制器动态感知Ingress服务规则的变化，然后生成一段对应的Nginx反向代理配置
 - 3. Ingress控制器将会生成的Nginx配置写入到一个运行着的Nginx服务中，并且动态更新
-- 4. 到此为止，其实真正在工作的就是一个Nginx了，内部配置了用户定义的请求转发规则
+- 4. 其实真正在工作的就是一个Nginx了，内部配置了用户的请求转发规则
 
 ## 二、创建Ingress
 
-### 1.创建Ingress Controller
+### 2.1 创建Ingress Controller
+
 将以下两个资源清单文件保存到服务器
-```shell
+
+```bash
 # 创建目录
 mkdir ingress-controller
 # 进入资源目录
@@ -38,25 +41,31 @@ wget https://raw.githubusercontent.com/kubernetes/ingress-nginx/nginx-0.30.0/dep
 ```
 
 执行kubectl创建资源命令
-```shell
+
+```bash
 kubectl apply -f ./
 ```
 
-### 2. 查看Ingress Controller
+### 2.2 查看Ingress Controller
+
 查看Pod：`kubectl get pods -n ingress-nginx`，返回以下内容
-```shell
+
+```bash
 NAME                                        READY   STATUS    RESTARTS   AGE
 nginx-ingress-controller-5bb8fb4bb6-qnbdv   1/1     Running   0          3m23s
 ```
 
 查看Service：`kubectl get svc -n ingress-nginx`，返回以下内容
-```shell
+
+```bash
 NAME            TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 ingress-nginx   NodePort   10.99.166.208   <none>        80:30796/TCP,443:31737/TCP   5m22s
 ```
 
-### 3. 创建Deployment和Service
+### 2.3 创建Deployment和Service
+
 创建3个Nginx和3个tomcat应用和对应的两个Service，创建`tomcat-nginx.yaml`文件，添加以下内容：
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -135,9 +144,11 @@ spec:
     targetPort: 8080
 ```
 
-### 4. 创建ingress-http
+### 3.4 创建ingress-http
+
 创建`ingress-http.yaml`，添加以下内容
-```shell
+
+```yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -163,13 +174,13 @@ spec:
 
 使用以下命令进行创建
 
-```shell
+```bash
 kubectl create -f ingress-http.yaml
 ```
 
 创建之后使用以下命令查看
 
-```shell
+```bash
 kubectl get ingress -n dev
 # 或
 kubectl get ing -n dev
@@ -177,7 +188,7 @@ kubectl get ing -n dev
 
 或使用以下命令指定ingress名称查看
 
-```shell
+```bash
 kubectl get ingress ingress-http -n dev
 # 或
 kubectl get ing ingress-http -n dev
@@ -185,7 +196,7 @@ kubectl get ing ingress-http -n dev
 
 或使用`kubectl describe ingress -n dev`指令查看详细信息，返回以下详细内容
 
-```shell
+```bash
 Name:             ingress-http
 Namespace:        dev
 Address:          10.99.166.208
@@ -204,16 +215,20 @@ Events:
   Normal  CREATE  21m   nginx-ingress-controller  Ingress dev/ingress-http
   Normal  UPDATE  21m   nginx-ingress-controller  Ingress dev/ingress-http
 ```
-### 5. 创建ingress-https
+
+### 3.5 创建ingress-https
+
 生成ssl证书以及密钥
-```shell
-# 生成证书
+
+```bash
+# 生成证书请求文件tls.crt和私钥tls.key
 openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/C=CN/ST=GZ/O=nginx/CN=jkdev.cn"
-# 创建密钥
+# 通过证书请求文件tls.crt和私钥tls.key生成k8s证书tls-secret
 kubectl create secret tls tls-secret --key tls.key --cert tls.crt
 ```
 
 添加`ingress-https.yaml`，添加以下内容
+
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -244,9 +259,10 @@ spec:
 ```
 
 ## 三、Nginx转发到k8s
+
 使用Nginx将来自外网的请求转发给k8s集群
 
-```shell
+```bash
 upstream default_backend_traefix {
   server 10.99.166.208:80 max_fails=3 fail_timeout=10s;
 }
