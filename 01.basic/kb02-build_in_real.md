@@ -79,7 +79,7 @@ EOF
 # 更新软件库
 apt-get update
 # 安装程序
-apt-get install -y kubelet=1.20.15-00 kubeadm=1.20.15-00 kubectl=1.20.15-00
+apt-get install -y kubelet=1.25.0-00 kubeadm=1.25.0-00 kubectl=1.25.0-00
 # 固定版本
 apt-mark hold kubelet kubeadm kubectl
 ```
@@ -89,49 +89,50 @@ apt-mark hold kubelet kubeadm kubectl
 使用`kubeadm config images list`命令查看当前集群基础服务所需要的镜像，镜像版本会根据当前的系统环境（当前安装kubeadm的版本）而定，返回如下内容
 
 ```bash
-k8s.gcr.io/kube-apiserver:v1.20.15
-k8s.gcr.io/kube-controller-manager:v1.20.15
-k8s.gcr.io/kube-scheduler:v1.20.15
-k8s.gcr.io/kube-proxy:v1.20.15
-k8s.gcr.io/pause:3.2
-k8s.gcr.io/etcd:3.4.13-0
-k8s.gcr.io/coredns:1.7.0
+registry.k8s.io/kube-apiserver:v1.25.0
+registry.k8s.io/kube-controller-manager:v1.25.0
+registry.k8s.io/kube-scheduler:v1.25.0
+registry.k8s.io/kube-proxy:v1.25.0
+registry.k8s.io/pause:3.8
+registry.k8s.io/etcd:3.5.4-0
+registry.k8s.io/coredns/coredns:v1.9.3
 ```
 
 使用阿里云镜像地址下载镜像：`registry.aliyuncs.com/google_containers`，执行如下命令
 
 ```bash
-docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.20.15
-docker pull registry.aliyuncs.com/google_containers/kube-controller-manager:v1.20.15
-docker pull registry.aliyuncs.com/google_containers/kube-scheduler:v1.20.15
-docker pull registry.aliyuncs.com/google_containers/kube-proxy:v1.20.15
-docker pull registry.aliyuncs.com/google_containers/pause:3.2
-docker pull registry.aliyuncs.com/google_containers/etcd:3.4.13-0
-docker pull registry.aliyuncs.com/google_containers/coredns:1.7.0
+docker pull registry.aliyuncs.com/google_containers/kube-apiserver:v1.25.0
+docker pull registry.aliyuncs.com/google_containers/kube-controller-manager:v1.25.0
+docker pull registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0
+docker pull registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0
+docker pull registry.aliyuncs.com/google_containers/pause:3.8
+docker pull registry.aliyuncs.com/google_containers/etcd:3.5.4-0
+# coredns直接从docker官网镜像站下载
+docker pull coredns/coredns:1.9.3
 ```
 
 接下来给镜像打标签，得到kubeadm需要的镜像
 
 ```bash
-docker tag registry.aliyuncs.com/google_containers/kube-apiserver:v1.20.15 k8s.gcr.io/kube-apiserver:v1.20.15
-docker tag registry.aliyuncs.com/google_containers/kube-controller-manager:v1.20.15 k8s.gcr.io/kube-controller-manager:v1.20.15
-docker tag registry.aliyuncs.com/google_containers/kube-scheduler:v1.20.15 k8s.gcr.io/kube-scheduler:v1.20.15
-docker tag registry.aliyuncs.com/google_containers/kube-proxy:v1.20.15 k8s.gcr.io/kube-proxy:v1.20.15
-docker tag registry.aliyuncs.com/google_containers/pause:3.2 k8s.gcr.io/pause:3.2
-docker tag registry.aliyuncs.com/google_containers/etcd:3.4.13-0 k8s.gcr.io/etcd:3.4.13-0
-docker tag registry.aliyuncs.com/google_containers/coredns:1.7.0 k8s.gcr.io/coredns:1.7.0
+docker tag registry.aliyuncs.com/google_containers/kube-apiserver:v1.25.0 k8s.gcr.io/kube-apiserver:v1.25.0
+docker tag registry.aliyuncs.com/google_containers/kube-controller-manager:v1.25.0 k8s.gcr.io/kube-controller-manager:v1.25.0
+docker tag registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0 k8s.gcr.io/kube-scheduler:v1.25.0
+docker tag registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0 k8s.gcr.io/kube-proxy:v1.25.0
+docker tag registry.aliyuncs.com/google_containers/pause:3.8 k8s.gcr.io/pause:3.8
+docker tag registry.aliyuncs.com/google_containers/etcd:3.5.4-0 k8s.gcr.io/etcd:3.5.4-0
+docker tag coredns/coredns:1.9.3 k8s.gcr.io/coredns/coredns:v1.9.3
 ```
 
-再删除掉从阿里云下载的镜像
+再删除掉下载的镜像
 
 ```bash
-docker rmi registry.aliyuncs.com/google_containers/kube-apiserver:v1.20.15
-docker rmi registry.aliyuncs.com/google_containers/kube-controller-manager:v1.20.15
-docker rmi registry.aliyuncs.com/google_containers/kube-scheduler:v1.20.15
-docker rmi registry.aliyuncs.com/google_containers/kube-proxy:v1.20.15
-docker rmi registry.aliyuncs.com/google_containers/pause:3.2
-docker rmi registry.aliyuncs.com/google_containers/etcd:3.4.13-0
-docker rmi registry.aliyuncs.com/google_containers/coredns:1.7.0
+docker rmi registry.aliyuncs.com/google_containers/kube-apiserver:v1.25.0
+docker rmi registry.aliyuncs.com/google_containers/kube-controller-manager:v1.25.0
+docker rmi registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0
+docker rmi registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0
+docker rmi registry.aliyuncs.com/google_containers/pause:3.8
+docker rmi registry.aliyuncs.com/google_containers/etcd:3.5.4-0
+docker rmi coredns/coredns:1.9.3
 ```
 
 ## 四、集群初始化
