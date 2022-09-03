@@ -107,34 +107,15 @@ docker pull registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0
 docker pull registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0
 docker pull registry.aliyuncs.com/google_containers/pause:3.8
 docker pull registry.aliyuncs.com/google_containers/etcd:3.5.4-0
-# coredns直接从docker官网镜像站下载
-docker pull coredns/coredns:1.9.3
-```
-
-接下来给镜像打标签，得到kubeadm需要的镜像
-
-```bash
-docker tag registry.aliyuncs.com/google_containers/kube-apiserver:v1.25.0 k8s.gcr.io/kube-apiserver:v1.25.0
-docker tag registry.aliyuncs.com/google_containers/kube-controller-manager:v1.25.0 k8s.gcr.io/kube-controller-manager:v1.25.0
-docker tag registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0 k8s.gcr.io/kube-scheduler:v1.25.0
-docker tag registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0 k8s.gcr.io/kube-proxy:v1.25.0
-docker tag registry.aliyuncs.com/google_containers/pause:3.8 k8s.gcr.io/pause:3.8
-docker tag registry.aliyuncs.com/google_containers/etcd:3.5.4-0 k8s.gcr.io/etcd:3.5.4-0
-docker tag coredns/coredns:1.9.3 k8s.gcr.io/coredns/coredns:v1.9.3
-```
-
-再删除掉下载的镜像
-
-```bash
-docker rmi registry.aliyuncs.com/google_containers/kube-apiserver:v1.25.0
-docker rmi registry.aliyuncs.com/google_containers/kube-controller-manager:v1.25.0
-docker rmi registry.aliyuncs.com/google_containers/kube-scheduler:v1.25.0
-docker rmi registry.aliyuncs.com/google_containers/kube-proxy:v1.25.0
-docker rmi registry.aliyuncs.com/google_containers/pause:3.8
-docker rmi registry.aliyuncs.com/google_containers/etcd:3.5.4-0
-docker rmi coredns/coredns:1.9.3
+docker pull registry.aliyuncs.com/google_containers/coredns:v1.9.3
 ```
 
 ## 四、集群初始化
 
-安装过程可以参考本系列上篇文章的链接：<https://github.com/BackendDoc/kubernetes/blob/main/01.basic/kb01-build.md>。
+在master1节点上执行集群初始化命令，因为我们在服务器上安装了阿里云镜像服务器的docker镜像，因此在初始化的时候使用`--image-repository`指定镜像地址即可，如下命令
+
+```bash
+kubeadm init --apiserver-advertise-address=192.168.64.4 --service-cidr=10.96.0.0/12 --pod-network-cidr=10.244.0.0/16  --ignore-preflight-errors=Swap --image-repository=registry.aliyuncs.com/google_containers --v=5
+```
+
+剩余的初始化过程可以参考本系列上篇文章的链接：<https://github.com/BackendDoc/kubernetes/blob/main/01.basic/kb01-build.md>。
