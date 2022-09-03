@@ -84,9 +84,13 @@ iptables -F
 curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 # 写入阿里云docker镜像服务软件源
 add-apt-repository "deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu $(lsb_release -cs) stable"
+# 更新软件库
+apt-get update
+# 查看可以安装的docke-ce版本
+apt-cache madison docker-ce
 # 安装docker
-apt-get -y install docker-ce=5:19.03.15~3-0~ubuntu-bionic
-# 固定docker版本
+apt-get -y install docker-ce=5:20.10.17~3-0~debian-bullseye
+# 固定docker-ce版本
 apt-mark hold docker-ce
 ```
 
