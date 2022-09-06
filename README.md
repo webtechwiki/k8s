@@ -33,9 +33,9 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 ......
 
-## 三、目录
+## 三、章节
 
-### 3.1 快速入门
+### 3.1 第一章：multipass+kubeadm搭建集群与快速入门
 
 - [01.在虚拟机中使用kubeadm快速搭建k8s集群](./01.basic/kb01-build_in_virtual.md)
 - [02.在物理机中使用kubeadm快速搭建k8s集群](./01.basic/kb02-build_in_real.md)
@@ -50,7 +50,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [11.存储](./01.basic/kb11-storage.md)
 - [12.IP网段规划建议](./01.basic/kb12-ip_suggestion.md)
 
-### 3.2 进阶知识
+### 3.2 第二章：vagrant+centos7使用二进制安装包的方式搭建集群
 
 - [01.k8s进阶知识概述](./02.forward/f01-summary.md)
 - [02.k8s二进制安装环境准备](./02.forward/f02-prepare.md)
@@ -72,3 +72,26 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [18.使用coredns实现服务发现](./02.forward/f18-coredns.md)
 - [19.服务暴露之nodePort型service](./02.forward/f19-nodeport.md)
 - [20.服务暴露之Ingress](./02.forward/f20-ingress.md)
+
+### 3.3 第二章：在debian物理机器使用二进制安装包搭建集群
+
+- [01.k8s进阶知识概述](./03.real_install/f01-summary.md)
+- [02.k8s二进制安装环境准备](./03.real_install/f02-prepare.md)
+- [03.证书签发环境准备](./03.real_install/f03-sign-prepare.md)
+- [04.通过二进制安装包安装docker](./03.real_install/f04-install-docker.md)
+- [05.安装harhor服务](./03.real_install/f05-install-harbor.md)
+- [06.安装etcd服务](./03.real_install/f06-install-etcd.md)
+- [07.安装apiserver](./03.real_install/f07-install-apiserver.md)
+- [08.安装L4反向代理服务](./03.real_install/f08-install-agent-server.md)
+- [09.安装控制节点的其他组件](./03.real_install/f09-install-other-component.md)
+- [10.安装kubectl](./03.real_install/f10-install-kubelet.md)
+- [11.安装kube-proxy](./03.real_install/f11-install-kubeproxy.md)
+- [12.回顾cfssl证书工具](./03.real_install/f12-cfssl-review.md)
+- [13.声明式资源管理方法](./03.real_install/f13-kubectl-command.md)
+- [14.陈述式资源管理方法](./03.real_install/f14-kubectl-yaml.md)
+- [15.flannel网络插件](./03.real_install/f15-flannel-plugin.md)
+- [16.flannel模型介绍](./03.real_install/f16-flannel-model.md)
+- [17.flannel优化](./03.real_install/f16-flannel-optimize.md)
+- [18.使用coredns实现服务发现](./03.real_install/f18-coredns.md)
+- [19.服务暴露之nodePort型service](./03.real_install/f19-nodeport.md)
+- [20.服务暴露之Ingress](./03.real_install/f20-ingress.md)
