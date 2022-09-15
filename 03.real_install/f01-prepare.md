@@ -1,88 +1,24 @@
 # k8s二进制安装环境准备
 
-在进行集群学习之前，我们先准备虚拟机环境，我们使用 `vagran` 来管理虚拟机，如果你电脑上还没有 vagrant 虚拟机管理工具，可以参考这篇文章[https://blog.jkdev.cn/index.php/archives/335/](https://blog.jkdev.cn/index.php/archives/335/)
+## 一、物理机器准备
 
+准备基础的设备如下
 
-## 1. 启动虚拟机 
+|      IP       |            操作系统            |               配置               |             备注              |
+| ------------- | ------------------------------ | -------------------------------- | ----------------------------- |
+| 192.168.9.199 | Debian GNU/Linux 11 (bullseye) | 内存:12G + SSD硬盘:256G + CPU:6核 | 作为控制节点，标记为: 199-debian |
+| 192.168.9.192 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核 | 作为工作节点，标记为: 192-debian |
+| 192.168.9.160 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核 | 作为工作节点，标记为: 190-debian |
 
-在一个工作目录中创建 `Vagrantfile` 文件，添加以下内容
+由于199这台主机资源相对充足，所以我们使用`199-debian`资源相对充足，所以我们使用这台机充当了更多的角色
 
-```ruby
-Vagrant.configure("2") do |config|
-  config.vm.box = "centos/7"
-  # kb11
-  config.vm.define "kb11" do |kb11|
-    kb11.vm.network "public_network", ip: "192.168.14.11"
-    kb11.vm.hostname = "kb11"
-    # 指定核心数和内存
-    config.vm.provider "virtualbox" do |v|
-      v.memory = 2048
-      v.cpus = 2
-    end
-  end
-  # kb12
-  config.vm.define "kb12" do |kb12|
-    kb12.vm.network "public_network", ip: "192.168.14.12"
-    kb12.vm.hostname = "kb12"
-    # 指定核心数和内存
-    config.vm.provider "virtualbox" do |v|
-      v.memory = 2048
-      v.cpus = 2
-    end
-  end
-  # kb21
-  config.vm.define "kb21" do |kb21|
-    kb21.vm.network "public_network", ip: "192.168.14.21"
-    kb21.vm.hostname = "kb21"
-    # 指定核心数和内存
-    config.vm.provider "virtualbox" do |v|
-      v.memory = 2048
-      v.cpus = 2
-    end
-  end
-  # kb22
-  config.vm.define "kb22" do |kb22|
-    kb22.vm.network "public_network", ip: "192.168.14.22"
-    kb22.vm.hostname = "kb22"
-    # 指定核心数和内存
-    config.vm.provider "virtualbox" do |v|
-      v.memory = 2048
-      v.cpus = 2
-    end
-  end
-  # kb200
-  config.vm.define "kb200" do |kb200|
-    kb200.vm.network "public_network", ip: "192.168.14.200"
-    kb200.vm.hostname = "kb200"
-    # 指定核心数和内存
-    config.vm.provider "virtualbox" do |v|
-      v.memory = 2048
-      v.cpus = 2
-    end
-  end
-end
-```
+- 192.168.9.199: etcd服务器、Proxy的L4、L7代理，同时作为运维主机：Docker的私有仓库、k8s资源配置清单仓库、提供共享存储（NFS）、签发证书、dns服务器
 
+- 192.168.9.192: etcd服务器、Proxy的L4、L7代理、控制节点、工作节点
 
-以上的配置文件，我们指定了 `centos 7` 作为所有虚拟机的基础镜像，并且分别定义了 5 台虚拟机，使用以下命令启动虚拟机
+- 192.168.9.192: etcd服务器、控制节点、工作节点
 
-```shell
-# 启动虚拟机
-vagran up
-```
-
-启动虚拟机之后进入虚拟机，修改 root 用户密码，在接下来的集群搭建操作中，我们都将在 root 用户下进行。以 kb11 为例，操作指令如下：
-
-```shell
-# 进入 kb11 虚拟机
-vagrant ssh kb11
-# 修改root账号密码
-sudo passwd root
-# 切换到 root 用户
-su
-```
-
-## 2. 初始化
+## 二、初始化
 
 初始化工作在所有的主机上执行
 
@@ -112,7 +48,7 @@ systemctl stop firewalld
 SELINUX=disabled
 ```
 
-## 3. 初始化域名解析服务器
+## 三、初始化域名解析服务器
 
 
 ### 3.1. 安装域名解析服务器软件
@@ -126,6 +62,7 @@ yum install -y bind
 ```
 
 安装好bind之后，修改bind的配置文件`/etc/named.conf`，修改的配置参数如下
+
 ```shell
 # 修改服务的IP
 listen-on port 53 { 192.168.14.11; };
