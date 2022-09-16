@@ -2,66 +2,161 @@
 
 本文参考[docker官方文档](https://docs.docker.com/engine/install/binaries/)
 
-## 1. 安装docker
+## 一、安装docker
 
-我们要在k8s工作节点（`kb21`和`kb22`这两台主机）上安装docker，同时还需要在运维主机上安装docker（kb200），以下是安装的过程
-
-### 1.1. 包管理工具安装
-
-使用官方脚本自动安装，执行如下命令
-
-```shell
-# 指定版本变量
-export VERSION=19.03.15
-# 安装docker
-curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
-```
-
-
-### 1.2. 二进制安装
+我们要在所有准备的节点上安装docker，以下是安装的过程
 
 docker二进制安装包的下载地址为：[https://download.docker.com/linux/static/stable/](https://download.docker.com/linux/static/stable/)
 
-需要注意的是，我们现在装的 docker 版本必须对应上即将安装的 k8s 版本，理论上越新的k8s版本支持的docker 版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对稳定的版本 `19.03.15`。
-
+需要注意的是，我们现在装的docker版本必须对应上即将安装的k8s版本，理论上越新的k8s版本支持的docker版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对稳定的版本`19.03.15`。
 
 ```shell
 # 下载二进制安装包
 wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
 # 解压安装包
 tar -zxvf docker-19.03.15.tgz
+# 赋予所有二进制文件可之行权限
+chmod +x docker/*
 # 将解压包里的内容移动系统的可执行文件目录中
-mv docker/* /usr/local/bin/
+mv docker/* /usr/bin
 ```
 
+## 二、配置docker
 
-## 2. 配置docker
-
-
-创建配置文件 `/etc/docker/daemon.json`，设置阿里云的加速镜像地址，如下内容
+创建配置文件 `/etc/docker/daemon.json`，设置非https的镜像地址，设置加速镜像地址等，根据自己的情况来配置，我配置的内容如下
 
 ```json
 {
   "storage-driver": "overlay2",
-  "insecure-registries": ["harbor.od.com"],
+  "insecure-registries": ["harbor.host.com"],
   "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"],
-  "bip": "172.7.21.1/24",
+  "bip": "172.7.199.1/24",
   "exec-opts": ["native.cgroupdriver=systemd"],
   "live-restore": true
 }
 ```
 
+需要注意的是，`bip`的配置在不同主机的配置需要不一样，这是生成的容器的IP网段。
+
 跟多的配置项可以参考官方文档：[https://docs.docker.com/engine/reference/commandline/dockerd/#options](https://docs.docker.com/engine/reference/commandline/dockerd/#options)
 
+## 三、配置systemd服务管理
 
-## 3. 启动与验证docker
+### 3.1 挂载cgroup
 
-使用后台运行的方式启动`dockerd`服务
+```bash
+mkdir /sys/fs/cgroup/systemd
+mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+```
+
+### 3.2 containerd服务配置
+
+编写`containerd`的服务配置文件`/usr/lib/systemd/system/containerd.service`，写入如下内容
+
+```ini
+[Unit]
+Description=containerd container runtime
+Documentation=https://containerd.io
+After=network.target local-fs.target
+
+[Service]
+ExecStartPre=-/sbin/modprobe overlay
+ExecStart=/usr/bin/containerd
+
+Type=notify
+Delegate=yes
+KillMode=process
+Restart=always
+RestartSec=5
+
+LimitNPROC=infinity
+LimitCORE=infinity
+LimitNOFILE=infinity
+
+TasksMax=infinity
+OOMScoreAdjust=-999
+
+[Install]
+WantedBy=multi-user.target
+```
+
+启动与`containerd`并设置为开机自启
+
+```bash
+systemctl daemon-reload
+systemctl start containerd.service
+systemctl enable containerd.service
+```
+
+### 3.3 docker服务配置
+
+添加`/usr/lib/systemd/system/docker.socket`，写入如下内容
+
+```ini
+[Unit]
+Description=Docker Socket for the API
+
+[Socket]
+ListenStream=/var/run/docker.sock
+SocketMode=0660
+SocketUser=root
+SocketGroup=docker
+
+[Install]
+WantedBy=sockets.target
+```
+
+添加`docker`的服务配置文件`/usr/lib/systemd/system/docker.service`，写入如下内容
+
+```ini
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network-online.target docker.socket firewalld.service containerd.service
+Wants=network-online.target
+Requires=docker.socket containerd.service
+
+[Service]
+Type=notify
+
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutSec=0
+RestartSec=2
+Restart=always
+
+StartLimitBurst=3
+
+StartLimitInterval=60s
+
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+
+TasksMax=infinity
+
+Delegate=yes
+
+KillMode=process
+OOMScoreAdjust=-500
+
+[Install]
+WantedBy=multi-user.target
+```
+
+启动与`docker`并设置为开机自启
+
+```bash
+systemctl daemon-reload
+systemctl start docker.service
+systemctl enable docker.service
+```
+
+## 四、验证docker
+
+运行一个nginx容器，如下命令
 
 ```shell
-# 启动docker服务
-dockerd &
-# 运行一个nginx容器
 docker run --name nginx -p 80:80 -d nginx:alpine
 ```
 
@@ -92,4 +187,3 @@ Commercial support is available at
 </body>
 </html>
 ```
-
