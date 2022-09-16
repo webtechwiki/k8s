@@ -1,24 +1,14 @@
 # 安装etcd
 
-我们将使用`kb12`、`kb21`、`kb22`这三台主机作为控制节点，首先在控制节点上搭建ectd集群。
+我们将使用`199-debian`、`192-debian`、`160-debian`这三台主机搭建ectd集群。
 
-## 1. 准备ssl证书
+## 一、准备ssl证书
 
-登录到`kb200`证书签发服务器。在本系列的第三篇中，我们已经进行了根证书的签发。现在我们需要基于证书服务器的根证书为etcd服务创建ssl证书。以下 是具体的签发过程
+登录到`199-debian`证书签发服务器。在本系列的前面的篇章中，我们已经进行了根证书的签发。现在我们需要基于证书服务器的根证书为etcd服务创建ssl证书。以下是具体的签发过程
 
+### 1.1 定义证书信息
 
-**1.1. 定义证书信息**
-
-创建证书保存目录
-
-```shell
-# 在根证书目录下创建专门存放etcd证书的目录
-mkdir -p /opt/certs/etcd
-# 进入etcd证书目录
-cd /opt/certs/etcd
-```
-
-我们先在`/opt/certs/`创建`ca-config.json`文件，定义证书的基本信息，写入如下内容
+我们先在`/opt/certs/`创建`ca-config.json`文件，定义证书的配置信息，写入如下内容
 
 ```json
 {
@@ -63,17 +53,16 @@ cd /opt/certs/etcd
 `client`：客户端去连接服务器时，需要证书
 `peer`：是服务器与客户端交换数据，都需要证书，接下来我们将基于`peer`属性创建证书。
 
-
 接下来在`/opt/certs/etcd`目录创建证书请求文件`etcd-peer-csr.json`，写入以下内容
 
 ```json
 {
     "CN": "etcd",
     "hosts": [
-        "192.168.14.11",
-        "192.168.14.12",
-        "192.168.14.21",
-        "192.168.14.22"
+        "192.168.9.199",
+        "192.168.9.192",
+        "192.168.9.160",
+        "192.168.14.165"
     ],
     "key": {
         "algo": "rsa",
@@ -83,7 +72,7 @@ cd /opt/certs/etcd
         "C": "CN",
         "ST": "Guangdong",
         "L": "Guangzhou",
-        "O": "od",
+        "O": "k8s",
         "OU": "ops"
     }]
 }
@@ -96,9 +85,7 @@ cd /opt/certs/etcd
 - `key`：定义证书类型，algo为加密类型，size为加密长度
 - `names`：证书的基本信息
 
-
-
-**1.2. 向签证机构（CA）申请证书**
+### 1.2 向签证机构（CA）申请证书
 
 完成以上步骤，使用以下命令给客户端申请证书
 
@@ -106,11 +93,11 @@ cd /opt/certs/etcd
 cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer etcd-peer-csr.json | cfssljson -bare etcd-peer
 ```
 
-## 2. 安装ectd
+## 二、安装ectd
 
+### 3.1 创建运行用户
 
-我们将在`kb12`、`kb21`、`kb22`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5`，我们选择一个较新较稳定的版本`3.4.18`，具体操作如下：
-
+我们将在`199-debian`、`192-debian`、`160-debian`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5`，我们选择一个较新较稳定的版本`3.4.18`，具体操作如下：
 
 先创建一个ectd用户，禁止该用户远程登录，并且没有家目录，如下命令
 
@@ -118,8 +105,7 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 useradd -s /sbin/nologin -M etcd
 ```
 
-
-安装
+### 3.2 安装
 
 ```shell
 # 下载对应版本
@@ -131,13 +117,13 @@ mv etcd-v3.1.18-linux-amd64/ /opt/etcd-v3.1.18
 # 创建etcd软链接
 ln -s /opt/etcd-v3.1.18 /opt/etcd
 # 创建etcd证书目录和数据目录
-mkdir -p /opt/etcd/certs /data/etcd /data/logs/etcd-server
+mkdir -p /opt/etcd/certs /data/etcd/etcd-server /data/logs/etcd-server
 # 进入证书目录
 cd /opt/etcd/certs
 # 从证书服务器下载证书
-scp root@kb200.host.com:/opt/certs/ca.pem ./
-scp root@kb200.host.com:/opt/certs/etcd/etcd-peer.pem ./
-scp root@kb200.host.com:/opt/certs/etcd/etcd-peer-key.pem ./
+scp debian@199-debian.k8s.com:/opt/certs/ca.pem ./
+scp debian@199-debian.k8s.com:/opt/certs/etcd/etcd-peer.pem ./
+scp debian@199-debian.k8s.com:/opt/certs/etcd/etcd-peer-key.pem ./
 ```
 
 此时，使用`ls -l`命令可查看到两张证书和一个私钥文件，如下内容
@@ -154,43 +140,40 @@ total 12
 
 ```shell
 # 将目录权限改为etcd用户
-chown -R etcd.etcd /opt/etcd/certs /data/etcd/ /data/logs/etcd-server
+chown -R etcd.etcd /opt/etcd/certs /data/etcd /data/logs/etcd-server
 ```
 
-
-## 3. 编写etcd启动脚本
-
+## 三、编写etcd启动脚本
 
 我们先在etcd目录编写启动脚本`/opt/etcd/startup.sh`，如下
 
 ```shell
-#!/bin/sh
-./etcd --name etcd-server-12 \
-       --data-dir /data/etcd/etcd-server \
-       --listen-peer-urls https://192.168.14.12:2380 \
-       --listen-client-urls https://192.168.14.12:2379,http://127.0.0.1:2379 \
-       --quota-backend-bytes 8000000000 \
-       --initial-advertise-peer-urls https://192.168.14.12:2380 \
-       --advertise-client-urls https://192.168.14.12:2379,http://127.0.0.1:2379 \
-       --initial-cluster etcd-server-12=https://192.168.14.12:2380,etcd-server-21=https://192.168.14.21:2380,etcd-server-22=https://192.168.14.22:2380 \
-       --initial-cluster-token="etcd-token" \
-       --initial-cluster-state=new \
-       --cert-file ./certs/etcd-peer.pem \
-       --key-file ./certs/etcd-peer-key.pem \
-       --client-cert-auth \
-       --trusted-ca-file ./certs/ca.pem \
-       --peer-cert-file ./certs/etcd-peer.pem \
-       --peer-key-file ./certs/etcd-peer-key.pem \
-       --peer-client-cert-auth \
-       --peer-trusted-ca-file ./certs/ca.pem
+#!/bin/bash
+./etcd --name etcd-server-199 \
+  --data-dir /data/etcd/etcd-server \
+  --listen-peer-urls https://192.168.9.199:2380 \
+  --listen-client-urls https://192.168.9.199:2379,http://127.0.0.1:2379 \
+  --quota-backend-bytes 8000000000 \
+  --initial-advertise-peer-urls https://192.168.9.199:2380 \
+  --advertise-client-urls https://192.168.9.199:2379,http://127.0.0.1:2379 \
+  --initial-cluster etcd-server-199=https://192.168.9.199:2380,etcd-server-192=https://192.168.9.192:2380,etcd-server-160=https://192.168.9.160:2380 \
+  --initial-cluster-token="etcd-token" \
+  --initial-cluster-state=new \
+  --cert-file ./certs/etcd-peer.pem \
+  --key-file ./certs/etcd-peer-key.pem \
+  --client-cert-auth \
+  --trusted-ca-file ./certs/ca.pem \
+  --peer-cert-file ./certs/etcd-peer.pem \
+  --peer-key-file ./certs/etcd-peer-key.pem \
+  --peer-client-cert-auth \
+  --peer-trusted-ca-file ./certs/ca.pem
 ```
 
 给启动脚本添加权限
+
 ```shell
 chmod +x startup.sh
 ```
-
-
 
 参数说明：
 
@@ -215,24 +198,23 @@ chmod +x startup.sh
 
 其他参数：ssl证书相关证书
 
-
-## 4. 使用supervisord来启动etcd
+## 四、使用supervisord来启动etcd
 
 现在我们要安装supervisord，用于管理etcd服务
 
 ```shell
 # 安装supervisor
-yum install supervisor -y
-# 启动supervisord
-systemctl start supervisord
-# 让superivisord开机自启
-systemctl enable supervisord
+apt install supervisor -y
+# 启动supervisor
+systemctl start supervisor
+# 让superivisor开机自启
+systemctl enable supervisor
 ```
 
-添加etcd的supervisor进程维护脚本`/etc/supervisord.d/etcd-server.ini`，添加以下内容
+添加etcd的supervisor进程维护脚本`/etc/supervisor/conf.d/etcd-server.conf`，添加以下内容
 
 ```shell
-[program:etcd-server-12]
+[program:etcd-server-199]
 directory=/opt/etcd
 command=/opt/etcd/startup.sh
 numprocs=1
@@ -252,7 +234,7 @@ stdout_capture_maxbytes=1MB
 stdout_event_enabled=false
 ```
 
-> 注意：在不同的主机上使用不同的服务名称，这样好辨别，如kb12使用`etcd-server-12`，如kb21使用`etcd-server-21`
+> 注意：在不同的主机上使用不同的服务名称，这样好辨别，如199-debian使用`etcd-server-199`，如192-debian使用`etcd-server-192`
 
 相关参数：
 
@@ -274,55 +256,44 @@ stdout_event_enabled=false
 `stdout_capture_maxbytes`: 当进程处于stdout capture mode模式的时候，写入capture FIFO的最大字节数限制，默认为0，此时认为stdout capture mode模式关闭
 `stdout_event_enabled`: 如果设置为true，在进程写入标准文件是会发起PROCESS_LOG_STDOUT
 
-
-
 更新supervisod配置文件
 
 ```shell
 supervisorctl update
 ```
 
-
 通过`supervisorctl status`查询supervisord状态，看到如下内容，代表supervisor正常运行
 
 ```shell
-[root@kb12 logs]# supervisorctl status
-etcd-server-12                   RUNNING   pid 4945, uptime 0:01:22
+root@debian:/opt/etcd# supervisorctl status
+etcd-server-199                  RUNNING   pid 85297, uptime 0:04:38
 ```
 
 此时，我们再使用`netstat -luntp | grep etcd`查看网络服务端口，看到如下信息代表etcd已经正常启动
 
 ```shell
-[root@kb12 logs]# netstat -luntp | grep etcd
-tcp        0      0 192.168.14.12:2379      0.0.0.0:*               LISTEN      4946/./etcd         
-tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN      4946/./etcd         
-tcp        0      0 192.168.14.12:2380      0.0.0.0:*               LISTEN      4946/./etcd
+root@debian:/opt/etcd# netstat -luntp | grep etcd
+tcp        0      0 192.168.9.199:2379      0.0.0.0:*               LISTEN      85298/./etcd        
+tcp        0      0 127.0.0.1:2379          0.0.0.0:*               LISTEN      85298/./etcd        
+tcp        0      0 192.168.9.199:2380      0.0.0.0:*               LISTEN      85298/./etcd
 ```
 
-## 5. 集群验证
-
-
+## 五、集群验证
 
 启动完成之后，我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
 
 ```shell
-./etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.14.12:2379,https://192.168.14.21:2379,https://192.168.14.22:2379" endpoint health --write-out=table
+./etcdctl cluster-health
 ```
 
+为了方便直接调用`etcdctl`命令，我们还可以创建其软连接
 
-如果看到输出的表格中`HEALTH`单元格数据都为`true`，代表 ectd 集群搭建成功
-
-```shell
-[root@kb21 etcd]# ./etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.14.12:2379,https://192.168.14.21:2379,https://192.168.14.22:2379" endpoint health --write-out=table
-+----------------------------+--------+-------------+-------+
-|          ENDPOINT          | HEALTH |    TOOK     | ERROR |
-+----------------------------+--------+-------------+-------+
-| https://192.168.14.22:2379 |   true | 11.968038ms |       |
-| https://192.168.14.21:2379 |   true | 11.394077ms |       |
-| https://192.168.14.12:2379 |   true | 11.584124ms |       |
-+----------------------------+--------+-------------+-------+
+```bash
+ln -s /opt/etcd/etcdctl /usr/local/bin/etcdctl
 ```
 
+如果看到如下输出，代表 ectd 集群搭建成功
+
+![20220917012642](img/20220917012642.png)
 
 如果需要了解`etcdctl`这个指令的更多用法，使用`--help`参数即可查看。
-
