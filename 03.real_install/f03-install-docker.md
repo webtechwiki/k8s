@@ -28,7 +28,7 @@ mv docker/* /usr/bin
 ```json
 {
   "storage-driver": "overlay2",
-  "insecure-registries": ["harbor.host.com"],
+  "insecure-registries": ["harbor.k8s.com"],
   "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"],
   "bip": "172.7.199.1/24",
   "exec-opts": ["native.cgroupdriver=systemd"],

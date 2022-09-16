@@ -52,31 +52,31 @@ dnssec-validation no;
 
 在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。我们对集群中的相关主机设置相关的域名解析，以便能通过域名访问到我们对应的服务器。以下是具体操作过程：
 
-修改区域配置文件 `/etc/bind/named.conf.local`，我们将`host.com`作为后续的业务域名，添加如下正向解析区域
+修改区域配置文件 `/etc/bind/named.conf.local`，我们将`k8s.com`作为后续的业务域名，添加如下正向解析区域
 
 ```bash
-zone "host.com" {
+zone "k8s.com" {
     type master;
-    file "host.com.zone";
+    file "k8s.com.zone";
 };
 ```
 
-编辑区域数据文件`/etc/bind/host.com.zone`，改为如下内容
+编辑区域数据文件`/etc/bind/k8s.com.zone`，改为如下内容
 
 ```bash
-$ORIGIN host.com.
+$ORIGIN k8s.com.
 $TTL 600 ; 10 minutes
-@ IN SOA dns.host.com. dnsadmin.host.com. (
+@ IN SOA dns.k8s.com. dnsadmin.k8s.com. (
     2022012002 ; serial
     10800      ; refresh (3 hours)
     900        ; retry (15 minutes)
     604800     ; expire (1 week)
     86400      ; minium (1 day)
     ) 
-    NS dns.host.com.
+    NS dns.k8s.com.
 
 $TTL 60    ;   1 minute
-dns             A   192.168.9.199
+dns             A      192.168.9.199
 199-debian      A      192.168.9.199
 192-debian      A      192.168.9.192
 160-debian      A      192.168.9.160
@@ -113,7 +113,7 @@ netstat -luntp | grep 53
 查看dns是否正常解析
 
 ```bash
-dig -t A 199-debian.host.com @192.168.9.199 +short
+dig -t A 199-debian.k8s.com @192.168.9.199 +short
 ```
 
 如果看到正常返回IP地址，则代表解析正常。
@@ -146,7 +146,7 @@ dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 重启网络服务，我们再使用如下指令检测是否解析正常
 
 ```bash
-ping 199-debian.host.com
+ping 199-debian.k8s.com
 ```
 
 如果返回如下图内容，这代表dns正常解析
