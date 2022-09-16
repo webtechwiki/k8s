@@ -1,6 +1,6 @@
 # 证书签发 环境准备
 
-我们把 `kb200` 这台主机作为运维主机，所以接下来很多操作都在这台主机上执行，我们先登录到这台主机，准备证书签发操作
+我们把 `199-debian` 这台主机作为运维主机，所以接下来很多操作都在这台主机上执行，我们先登录到这台主机，准备证书签发操作
 
 ## 一、安装cfssl工具
 
@@ -28,13 +28,13 @@ mkdir -p /opt/certs
 cd /opt/certs
 ```
 
-### 2.1 创建签证机构（CA）信息
+### 2.1 定义自签证机构（CA）的根证书信息
 
-创建`/opt/certs/ca-csr.json`文件，此文件定义签证机构（CA）的相关信息，填入以下内容
+创建`/opt/certs/ca-csr.json`证书请求文件，此文件定义签证机构（CA）的相关信息，定义好之后用于生成根证书，填入以下内容
 
 ```json
 {
-    "CN": "etcd CA",
+    "CN": "CA",
     "key": {
         "algo": "rsa",
         "size": 2048
@@ -44,7 +44,7 @@ cd /opt/certs
             "C": "CN",
             "L": "Guangzhou",
             "ST": "Guangdong",
-            "O": "od",
+            "O": "jkdev.cn",
             "OU": "ops"
         }
     ],
@@ -65,7 +65,7 @@ names 的相关字段：
 
 ca的expiry字段代表有效时间，175200h代表20年
 
-### 2.2. 生成根证书 的 CSR 文件和秘钥文件
+### 2.2. 生成自签证机构的根证书
 
 申请数字证书之前，必须先生成证书的密钥文件和CSR文件。CSR文件是你的公钥证书原始文件，包含了你的服务器信息和你的单位信息，需要提交给CA认证中心进行审核。
 
@@ -81,14 +81,4 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
 `ca.pem`: ca公钥证书
 `ca-key.pem`: ca私钥证书
 
-我们在修改ssh配置文件，支持后续操作的主机可以下载我们当前主机的文件，使用`vim /etc/ssh/sshd_config`命令修改ssh配置文件，如下
-
-```bash
-PasswordAuthentication yes
-```
-
-修改好配置文件之后使用以下命令重启服务
-
-```bash
-systemctl restart sshd
-```
+生成的三个文件也就是根证书包含的内容，在后续，我们根各个服务颁发证书的时候，都基于根证书来颁发。

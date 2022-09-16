@@ -1,15 +1,12 @@
 # 使用二进制安装包的方式安装docker
 
-
 本文参考[docker官方文档](https://docs.docker.com/engine/install/binaries/)
-
 
 ## 1. 安装docker
 
 我们要在k8s工作节点（`kb21`和`kb22`这两台主机）上安装docker，同时还需要在运维主机上安装docker（kb200），以下是安装的过程
 
 ### 1.1. 包管理工具安装
-
 
 使用官方脚本自动安装，执行如下命令
 

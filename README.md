@@ -77,7 +77,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 - [01.物理机器k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
 - [02.证书签发环境准备](./03.real_install/f02-sign-prepare.md)
-- [04.通过二进制安装包安装docker](./03.real_install/f04-install-docker.md)
+- [03.通过二进制安装包安装docker](./03.real_install/f03-install-docker.md)
 - [05.安装harhor服务](./03.real_install/f05-install-harbor.md)
 - [06.安装etcd服务](./03.real_install/f06-install-etcd.md)
 - [07.安装apiserver](./03.real_install/f07-install-apiserver.md)
