@@ -296,4 +296,16 @@ ln -s /opt/etcd/etcdctl /usr/local/bin/etcdctl
 
 ![20220917012642](img/20220917012642.png)
 
+为了验证etcd集群是否正常工作，我们还可以现在`199-debian`设置一个值，如下
+
+```bash
+etcdctl set name lixiaoming
+```
+
+再通过`192-debian`和`160-debian`去读取值，如果正常取到，代表etcd集群正常工作，如下命令
+
+```bash
+etcdctl get name
+```
+
 如果需要了解`etcdctl`这个指令的更多用法，使用`--help`参数即可查看。
