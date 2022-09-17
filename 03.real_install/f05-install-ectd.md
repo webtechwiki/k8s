@@ -97,7 +97,7 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 ### 3.1 创建运行用户
 
-我们将在`199-debian`、`192-debian`、`160-debian`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5`，我们选择一个较新较稳定的版本`3.4.18`，具体操作如下：
+我们将在`199-debian`、`192-debian`、`160-debian`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5.4`，我们选择一个较新的版本`v3.5.4`，具体操作如下：
 
 先创建一个ectd用户，禁止该用户远程登录，并且没有家目录，如下命令
 
@@ -109,13 +109,13 @@ useradd -s /sbin/nologin -M etcd
 
 ```shell
 # 下载对应版本
-wget https://github.com/etcd-io/etcd/releases/download/v3.1.18/etcd-v3.1.18-linux-amd64.tar.gz
+wget https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
 # 解压
-tar -zxvf etcd-v3.1.18-linux-amd64.tar.gz
+tar -zxvf etcd-v3.5.4-linux-amd64.tar.gz
 # 将etc移到/opt目录，并修改etcd目录名
-mv etcd-v3.1.18-linux-amd64/ /opt/etcd-v3.1.18
+mv etcd-v3.5.4-linux-amd64/ /opt/etcd-v3.5.4
 # 创建etcd软链接
-ln -s /opt/etcd-v3.1.18 /opt/etcd
+ln -s /opt/etcd-v3.5.4 /opt/etcd
 # 创建etcd证书目录和数据目录
 mkdir -p /opt/etcd/certs /data/etcd/etcd-server /data/logs/etcd-server
 # 进入证书目录
@@ -213,7 +213,7 @@ systemctl enable supervisor
 
 添加etcd的supervisor进程维护脚本`/etc/supervisor/conf.d/etcd-server.conf`，添加以下内容
 
-```shell
+```ini
 [program:etcd-server-199]
 directory=/opt/etcd
 command=/opt/etcd/startup.sh
@@ -280,21 +280,21 @@ tcp        0      0 192.168.9.199:2380      0.0.0.0:*               LISTEN      
 
 ## 五、集群验证
 
-启动完成之后，我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
-
-```shell
-./etcdctl cluster-health
-```
-
 为了方便直接调用`etcdctl`命令，我们还可以创建其软连接
 
 ```bash
 ln -s /opt/etcd/etcdctl /usr/local/bin/etcdctl
 ```
 
+我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
+
+```shell
+etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.9.199:2379,https://192.168.9.199:2379,https://192.168.9.199:2379" endpoint health --write-out=table
+```
+
 如果看到如下输出，代表 ectd 集群搭建成功
 
-![20220917012642](img/20220917012642.png)
+![20220918005018](img/20220918005018.png)
 
 为了验证etcd集群是否正常工作，我们还可以现在`199-debian`设置一个值，如下
 
