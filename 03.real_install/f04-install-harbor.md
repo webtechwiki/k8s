@@ -95,7 +95,7 @@ nginx的源代码的下载地址是：[https://nginx.org/en/download.html](https
 在编写文档的时候，nginx的最新稳定版本是`1.22.0`，下载nginx源代码，并编译安装，命令如下：
 
 ```bash
-# 下载云代码
+# 下载代码
 wget https://nginx.org/download/nginx-1.22.0.tar.gz
 # 解压文件
 tar -zxvf nginx-1.22.0.tar.gz

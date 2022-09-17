@@ -1,66 +1,70 @@
 # 安装L4反向代理服务
 
+## 一、安装nginx
 
-## 1. 安装nginx
+我们需要在`199-debian`和`192-debian`上安装keepalived，先安装linux，`199-debian`已经安装过，`192-debian`需要安装
 
-我们需要在`kb11`和`kb12`上安装keepalived
-
-```shell
-# 安装nginx
-yum install nginx -y
-# 安装nginx的stream模块，用于L4的反向代理
-yum install nginx-mod-stream -y
+```bash
+# 下载代码
+wget https://nginx.org/download/nginx-1.22.0.tar.gz
+# 解压文件
+tar -zxvf nginx-1.22.0.tar.gz
+# 进入源码目录
+cd nginx-1.22.0
+# 配置编译参数，--prefix参数指定安装目录
+./configure \
+--prefix=/usr/local/nginx-1.22.0 \
+--with-stream \
+--with-http_stub_status_module \
+--with-http_ssl_module --with-http_v2_module \
+--error-log-path=/data/log/nginx/error.log \
+--http-log-path=/data/log/nginx/access.log
+# 编译并安装
+make && make install
 ```
 
-安装完成之后，我们需要在nginx的配置文件`/etc/nginx/nginx.conf`加载`stream`添加四层反向代码规则
+安装完成之后，我们需要两台机的nginx的配置文件`/usr/local/nginx/conf//nginx.conf`的`http`节点旁边添加四层反向代码规则
 
 ```shell
 # 设置代理规则
 stream {
-	upstream kube-apiserver {
-		server 192.168.14.21:6443  max_fails=3  fail_timeout=30s;
-		server 192.168.14.22:6443  max_fails=3  fail_timeout=30s;
-	}
-	server {
-		listen  7443;
-		proxy_connect_timeout  2s;
-		proxy_timeout  900s;
-		proxy_pass kube-apiserver;
-	}
+    upstream kube-apiserver {
+        server 192.168.9.199:6443  max_fails=3  fail_timeout=30s;
+        server 192.168.9.192:6443  max_fails=3  fail_timeout=30s;
+    }
+    server {
+        listen  7443;
+        proxy_connect_timeout  2s;
+        proxy_timeout  900s;
+        proxy_pass kube-apiserver;
+    }
 }
 ```
 
-如果使用手动编译的方式安装`stream`模块，需要手动加载如下代码
-
-```shell-script
-# 加载stream模块
-load_module /usr/lib64/nginx/modules/ngx_stream_module.so;
-```
-
-通过以上的配置可知，我们将`kb11`和`kb12`本机的7443端口反向代码到了`kb21`和`kb22`的6443端口。在两台主机上配置好规则之后，通过`nginx -t`命令检查配置结果，如果输出以下内容代表配置正确
+通过以上的配置可知，我们将`199-debian`和`192-debian`本机的7443端口反向代码到了`199-debian`和`192-debian`的6443端口。在两台主机上配置好规则之后，通过`nginx -t`命令检查配置结果，如果输出以下内容代表配置正确
 
 ```shell
-[root@kb11 vagrant]# nginx -t
+[root@199-debian vagrant]# nginx -t
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
 
-
 配置成功之后，启动nginx，如下指令
 
-```shell-script
-# 启动ginx
+```bash
+# 设置链接
+ln -s /usr/local/nginx-1.22.0 /usr/local/nginx
+ln -s /usr/local/nginx/sbin/nginx /usr/local/bin/nginx
+# 启动ginx，199主机使用 nginx -s reload重新加载配置即可
 nginx
-# 让nginx开机自启
-systemctl enable nginx
 ```
 
-## 2. 安装keepalived
+## 二、安装keepalived
 
 我们将使用keepalived实现代理服务器的高可用，以下是安装过程
 
 ```shell
-yum install keepalived -y
+apt install keepalived -y
 ```
 
 在两台主机的创建`/etc/keepalived/check_port.sh`脚本文件，添加以下内容
@@ -69,31 +73,31 @@ yum install keepalived -y
 #!/bin/bash
 CHK_PORT=$1
 if [ -n "$CHK_PORT" ]; then
-	PORT_PROCESS=`ss -lnt|grep $CHK_PORT|wc -l`
-	if [ $PORT_PROCESS -eq 0 ]; then
-		echo "Port $CHK_PORT Is Not Used, End"
-		exit 1
-	fi
+    PORT_PROCESS=`ss -lnt|grep $CHK_PORT|wc -l`
+    if [ $PORT_PROCESS -eq 0 ]; then
+        echo "Port $CHK_PORT Is Not Used, End"
+        exit 1
+    fi
 else
-	echo "Check Port Cant Be Empty!"
+    echo "Check Port Cant Be Empty!"
 fi
 ```
 
 添加执行权限
+
 ```shell
 chmod +x /etc/keepalived/check_port.sh
 ```
 
+以上的操作就准备好keepalived的基础环境了，接下来我们使用`199-debian`这台主机作为主节点，使用`192-debian`作为重节点，进行以下配置
 
-以上的操作就准备好keepalived的基础环境了，接下来我们使用`kb11`这台主机作为主节点，使用`kb12`作为重节点，进行以下配置
-
-`kb11`主节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
+`199-debian`主节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
 
 ```shell
 ! Configuration File for keepalived
 
 global_defs {
-   router_id 192.168.14.11
+   router_id 192.168.9.199
 }
 
 vrrp_script check_nginx {
@@ -104,11 +108,11 @@ vrrp_script check_nginx {
 
 vrrp_instance VI_1 {
     state MASTER
-    interface eth1
+    interface enp1s0
     virtual_router_id 251
     priority 100
     advert_int 1
-    mcast_src_ip 192.168.14.11
+    mcast_src_ip 192.168.9.199
     nopreempt
 
     authentication {
@@ -121,14 +125,13 @@ vrrp_instance VI_1 {
 }
 ```
 
-
-`kb12`从节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
+`192-debian`从节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
 
 ```shell
 ! Configuration File for keepalived
 
 global_defs {
-   router_id 192.168.14.12
+   router_id 192.168.9.192
 }
 
 vrrp_script check_nginx {
@@ -139,11 +142,11 @@ vrrp_script check_nginx {
 
 vrrp_instance VI_1 {
     state BACKUP
-    interface eth1
+    interface enp3s0
     virtual_router_id 251
     priority 90
     advert_int 1
-    mcast_src_ip 192.168.14.12
+    mcast_src_ip 192.168.9.192
     nopreempt
 
     authentication {
@@ -156,8 +159,8 @@ vrrp_instance VI_1 {
 }
 ```
 
-
 启动服务
+
 ```shell
 # 重启服务
 systemctl restart keepalived
@@ -165,5 +168,8 @@ systemctl restart keepalived
 systemctl enable keepalived
 ```
 
+需要主机的是，`interface`参数对应的是真实的主机网卡名称，`virtual_router_id`参数需要在同一个虚拟IP的前提下，设置需一致。
 
+## 三、验证
 
+通过`ping 192.169.9.190`的方式，如果有正常返回，代表keepalived运行成功。
