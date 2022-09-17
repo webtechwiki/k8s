@@ -294,7 +294,7 @@ etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem"
 
 如果看到如下输出，代表 ectd 集群搭建成功
 
-![20220918005018](img/20220918005018.png)
+![20220918005018](./img/05-01.png)
 
 为了验证etcd集群是否正常工作，我们还可以现在`199-debian`设置一个值，如下
 
