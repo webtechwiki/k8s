@@ -1,10 +1,6 @@
 # 安装主控制节点控制器和调度器
 
-
-因为我们的主控制节点的`apiserver`组件，没有安装在不同的主机，所以下面启动`controller-manager`和`scheduler`的时候可以不使用`tsl`证书，直接连接本地的`apiserver`即可
-
-## 1. 安装controller-manager
-
+## 一、安装controller-manager
 
 创建文件`/opt/kubernetes/server/bin/kube-controller-manager.sh`，添加以下内容
 
@@ -21,10 +17,7 @@
   --v 2
 ```
 
-
-
 添加执行权限与创建日志目录
-
 
 ```shell
 # 添加可执行权限
@@ -32,7 +25,6 @@ chmod +x kube-controller-manager.sh
 # 创建日志目录
 mkdir -p /data/logs/kubernetes/kube-controller-manager
 ```
-
 
 创建supervisor脚本启动管理文件`/etc/supervisord.d/kube-controller-manager.ini`，添加以下内容
 
@@ -63,12 +55,9 @@ stdout_event_enabled=false
 supervisorctl update
 ```
 
-
-
-## 2. 部署scheduler
+## 二、部署scheduler
 
 创建scheluder启动脚本文件`/opt/kubernetes/server/bin/kube-scheduler.sh`文件，添加以下内容
- 
 
 ```shell
 #!/bin/sh
@@ -90,7 +79,7 @@ mkdir -p /data/logs/kubernetes/kube-scheduler
 
 创建进程管理配置文件`/etc/supervisord.d/kube-scheduler.ini`文件，添加以下内容
 
-```shell
+```ini
 [program:kube-scheduler-21]
 directory=/opt/kubernetes/server/bin
 command=/opt/kubernetes/server/bin/kube-scheduler.sh
@@ -111,16 +100,13 @@ stdout_capture_maxbytes=1MB
 stdout_event_enabled=false
 ```
 
-
-
 更新supervisor
 
 ```shell
 supervisorctl update
 ```
 
-
-## 3. 集群验证
+## 三、集群验证
 
 安装完成基本的组件之后，我们接下来使用`kubectl`作为k8s的管理工具，创建一个软链接，如下
 
