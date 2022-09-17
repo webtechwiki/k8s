@@ -92,13 +92,13 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 ```shell
 # 下载指定的服务器二进制包
-wget https://dl.k8s.io/v1.15.2/kubernetes-server-linux-amd64.tar.gz
+wget https://dl.k8s.io/v1.25.1/kubernetes-server-linux-amd64.tar.gz
 # 解压安装包
 tar -zxvf kubernetes-server-linux-amd64.tar.gz
 # 将安装包移到/opt目录下并根据版本重命名
-mv kubernetes /opt/kubernetes-v1.15.2
+mv kubernetes /opt/kubernetes-v1.25.1
 # 创建软连接
-ln -s /opt/kubernetes-v1.15.2/ /opt/kubernetes
+ln -s /opt/kubernetes-v1.25.1/ /opt/kubernetes
 ```
 
 在k8s二进制安装目录里包含了k8s源码包，还包含k8s核心组件的docker镜像，因为我们的核心服务不运行在容器里，所以可以删除掉，操作过程如下
@@ -137,7 +137,8 @@ mkdir -p /opt/kubernetes/server/bin/conf
 ```shell
 #!/bin/bash
 ./kube-apiserver \
-    --apiserver-count 2 \
+    --service-account-issuer token-issuer \
+    --service-account-signing-key-file ./certs/ca-key.pem \
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
     --audit-policy-file ./conf/audit.yaml \
     --authorization-mode RBAC \
@@ -153,7 +154,6 @@ mkdir -p /opt/kubernetes/server/bin/conf
     --service-account-key-file ./certs/ca-key.pem \
     --service-cluster-ip-range 192.168.0.0/16 \
     --service-node-port-range 3000-29999 \
-    --target-ram-mb=1024 \
     --kubelet-client-certificate ./certs/client.pem \
     --kubelet-client-key ./certs/client-key.pem \
     --log-dir /data/logs/kubernetes/kube-apiserver \
@@ -173,7 +173,6 @@ rules:
 
 参数说明
 
-`--apiserver-count`：集群中运行的apiserver的服务数量
 `--audit-log-path`：api请求的日志文件目录
 `--audit-policy-file`：定义审核策略配置的文件的路径
 `--authorization-mode`：授权模式
@@ -219,7 +218,7 @@ mkdir -p /data/logs/kubernetes/kube-apiserver
 
 创建supervisor进程配置文件`/etc/supervisor/conf.d/kube-apiserver.conf`
 
-```shell
+```ini
 [program:kube-apiserver-160]
 directory=/opt/kubernetes/server/bin
 command=/opt/kubernetes/server/bin/kube-apiserver.sh
@@ -248,8 +247,8 @@ supervisorctl update
 
 再使用`supervisorctl status`命令查看apiserver启动状态，如果显示如下内容，代表正常服务
 
-![20220917122956](img/20220917122956.png)
+![20220917122956](./img/06-01.png)
 
 此时，还可以使用`netstat -luntp | grep kube-api`命令查看网络服务的端口是否正常，如果正常，将返回如下内容
 
-![20220917123050](img/20220917123050.png)
+![20220917123050](./img/06-02.png)
