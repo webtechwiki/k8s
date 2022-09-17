@@ -8,13 +8,13 @@
 
 docker二进制安装包的下载地址为：[https://download.docker.com/linux/static/stable/](https://download.docker.com/linux/static/stable/)
 
-需要注意的是，我们现在装的docker版本必须对应上即将安装的k8s版本，理论上越新的k8s版本支持的docker版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对稳定的版本`19.03.15`。
+需要注意的是，我们现在装的docker版本必须对应上即将安装的k8s版本，理论上越新的k8s版本支持的docker版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对新的版本`20.10.16`。
 
 ```shell
 # 下载二进制安装包
-wget https://download.docker.com/linux/static/stable/x86_64/docker-19.03.15.tgz
+wget https://download.docker.com/linux/static/stable/x86_64/docker-20.10.16.tgz
 # 解压安装包
-tar -zxvf docker-19.03.15.tgz
+tar -zxvf docker-20.10.16.tgz
 # 赋予所有二进制文件可之行权限
 chmod +x docker/*
 # 将解压包里的内容移动系统的可执行文件目录中
@@ -42,11 +42,15 @@ mv docker/* /usr/bin
 
 ## 三、配置systemd服务管理
 
-### 3.1 挂载cgroup
+### 3.1 自动挂载cgroup
 
 ```bash
-mkdir /sys/fs/cgroup/systemd
-mount -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd
+# 安装
+apt install -y cgroupfs-mount
+# 挂在
+cgroupfs-mount
+# 开机自启动
+systemctl enable cgroupfs-mount
 ```
 
 ### 3.2 containerd服务配置
@@ -90,55 +94,27 @@ systemctl enable containerd.service
 
 ### 3.3 docker服务配置
 
-添加`/usr/lib/systemd/system/docker.socket`，写入如下内容
-
-```ini
-[Unit]
-Description=Docker Socket for the API
-
-[Socket]
-ListenStream=/var/run/docker.sock
-SocketMode=0660
-SocketUser=root
-SocketGroup=docker
-
-[Install]
-WantedBy=sockets.target
-```
-
 添加`docker`的服务配置文件`/usr/lib/systemd/system/docker.service`，写入如下内容
 
 ```ini
 [Unit]
 Description=Docker Application Container Engine
 Documentation=https://docs.docker.com
-After=network-online.target docker.socket firewalld.service containerd.service
+After=network-online.target firewalld.service
 Wants=network-online.target
-Requires=docker.socket containerd.service
 
 [Service]
 Type=notify
-
-ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
-ExecReload=/bin/kill -s HUP $MAINPID
-TimeoutSec=0
-RestartSec=2
-Restart=always
-
-StartLimitBurst=3
-
-StartLimitInterval=60s
-
+ExecStart=/usr/bin/dockerd
+ExecReload=/bin/kill -s HUP 
 LimitNOFILE=infinity
 LimitNPROC=infinity
-LimitCORE=infinity
-
-TasksMax=infinity
-
+TimeoutStartSec=0
 Delegate=yes
-
 KillMode=process
-OOMScoreAdjust=-500
+Restart=on-failure
+StartLimitBurst=3
+StartLimitInterval=60s
 
 [Install]
 WantedBy=multi-user.target
