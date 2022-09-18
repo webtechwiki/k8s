@@ -2,19 +2,55 @@
 
 ## 一、安装controller-manager
 
+```bash
+# 设置一个集群项
+kubectl config set-cluster kubernetes \
+     --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
+     --embed-certs=true \
+     --server=https://192.168.9.199:6443 \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/controller-manager.kubeconfig
+
+# 设置一个环境项，一个上下文
+
+kubectl config set-context system:kube-controller-manager@kubernetes \
+    --cluster=kubernetes \
+    --user=system:kube-controller-manager \
+    --kubeconfig=/opt/kubernetes/server/bin/conf/controller-manager.kubeconfig
+
+# 设置一个用户项
+kubectl config set-credentials system:kube-controller-manager \
+     --client-certificate=/opt/kubernetes/server/bin/certs/client.pem \
+     --client-key=/opt/kubernetes/server/bin/certs/client-key.pem \
+     --embed-certs=true \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/controller-manager.kubeconfig
+
+# 设置默认环境
+kubectl config use-context system:kube-controller-manager@kubernetes \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/controller-manager.kubeconfig
+```
+
 创建文件`/opt/kubernetes/server/bin/kube-controller-manager.sh`，添加以下内容
 
 ```shell
 #!/bin/sh
 ./kube-controller-manager \
-  --cluster-cidr 172.7.0.0/16 \
-  --leader-elect true \
-  --log-dir /data/logs/kubernetes/kube-controller-manager \
-  --master http://127.0.0.1:8080 \
-  --service-account-private-key-file ./certs/ca-key.pem \
-  --service-cluster-ip-range 192.168.0.0/16 \
-  --root-ca-file ./certs/ca.pem \
-  --v 2
+  --v=2 \
+  --logtostderr=true \
+  --root-ca-file=./certs/ca.pem \
+  --cluster-signing-cert-file=./certs/ca.pem \
+  --cluster-signing-key-file=./certs/ca-key.pem \
+  --service-account-private-key-file=/opt/kubernetes/server/bin/certs/sa.key \
+  --kubeconfig=/opt/kubernetes/server/bin/conf/controller-manager.kubeconfig \
+  --leader-elect=true \
+  --use-service-account-credentials=true \
+  --node-monitor-grace-period=40s \
+  --node-monitor-period=5s \
+  --pod-eviction-timeout=2m0s \
+  --controllers=*,bootstrapsigner,tokencleaner \
+  --allocate-node-cidrs=true \
+  --cluster-cidr=172.16.0.0/12 \
+  --requestheader-client-ca-file=/opt/kubernetes/server/bin/certs/ca.pem \
+  --node-cidr-mask-size=24
 ```
 
 添加执行权限与创建日志目录
@@ -26,10 +62,10 @@ chmod +x kube-controller-manager.sh
 mkdir -p /data/logs/kubernetes/kube-controller-manager
 ```
 
-创建supervisor脚本启动管理文件`/etc/supervisord.d/kube-controller-manager.ini`，添加以下内容
+创建supervisor脚本启动管理文件`/etc/supervisor/conf.d/kube-controller-manager.conf`，添加以下内容
 
-```shell
-[program:kube-controller-manager-21]
+```ini
+[program:kube-controller-manager-199]
 directory=/opt/kubernetes/server/bin
 command=/opt/kubernetes/server/bin/kube-controller-manager.sh
 numprocs=1
@@ -57,14 +93,38 @@ supervisorctl update
 
 ## 二、部署scheduler
 
+创建配置
+
+```bash
+kubectl config set-cluster kubernetes \
+     --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
+     --embed-certs=true \
+     --server=https://192.168.9.199:6443 \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/scheduler.kubeconfig
+
+kubectl config set-credentials system:kube-scheduler \
+     --client-certificate=/opt/kubernetes/server/bin/certs/client.pem \
+     --client-key=/opt/kubernetes/server/bin/certs/client-key.pem \
+     --embed-certs=true \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/scheduler.kubeconfig
+
+kubectl config set-context system:kube-scheduler@kubernetes \
+     --cluster=kubernetes \
+     --user=system:kube-scheduler \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/scheduler.kubeconfig
+
+kubectl config use-context system:kube-scheduler@kubernetes \
+     --kubeconfig=/opt/kubernetes/server/bin/conf/scheduler.kubeconfig
+```
+
 创建scheluder启动脚本文件`/opt/kubernetes/server/bin/kube-scheduler.sh`文件，添加以下内容
 
 ```shell
-#!/bin/sh
+#!/bin/bash
 ./kube-scheduler \
+  --logtostderr=true \
   --leader-elect \
-  --log-dir /data/logs/kubernetes/kube-scheduler \
-  --master http://127.0.0.1:8080 \
+  --kubeconfig=/opt/kubernetes/server/bin/conf/scheduler.kubeconfig \
   --v 2
 ```
 
@@ -77,10 +137,10 @@ chmod +x kube-scheduler.sh
 mkdir -p /data/logs/kubernetes/kube-scheduler
 ```
 
-创建进程管理配置文件`/etc/supervisord.d/kube-scheduler.ini`文件，添加以下内容
+创建进程管理配置文件`/etc/supervisor/conf.d/kube-scheduler.conf`文件，添加以下内容
 
 ```ini
-[program:kube-scheduler-21]
+[program:kube-scheduler-199]
 directory=/opt/kubernetes/server/bin
 command=/opt/kubernetes/server/bin/kube-scheduler.sh
 numprocs=1
@@ -111,7 +171,7 @@ supervisorctl update
 安装完成基本的组件之后，我们接下来使用`kubectl`作为k8s的管理工具，创建一个软链接，如下
 
 ```shell
-ln -s /opt/kubernetes/server/bin/kubectl /usr/bin/kubectl
+ln -s /opt/kubernetes/server/bin/kubectl /usr/local/bin/kubectl
 ```
 
 再使用`kubectl get cs`检查集群状态，如下返回如下内容，则代表正常服务

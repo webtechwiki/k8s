@@ -23,7 +23,7 @@ cd nginx-1.22.0
 make && make install
 ```
 
-安装完成之后，我们需要两台机的nginx的配置文件`/usr/local/nginx/conf//nginx.conf`的`http`节点旁边添加四层反向代码规则
+安装完成之后，我们需要两台机的nginx的配置文件`/usr/local/nginx/conf/nginx.conf`的`http`节点旁边添加四层反向代码规则
 
 ```shell
 # 设置代理规则
@@ -31,6 +31,7 @@ stream {
     upstream kube-apiserver {
         server 192.168.9.199:6443  max_fails=3  fail_timeout=30s;
         server 192.168.9.192:6443  max_fails=3  fail_timeout=30s;
+        server 192.168.9.160:6443  max_fails=3  fail_timeout=30s;
     }
     server {
         listen  7443;
@@ -120,7 +121,7 @@ vrrp_instance VI_1 {
         auth_pass 1111
     }
     virtual_ipaddress {
-        192.168.14.10
+        192.168.9.190
     }
 }
 ```
@@ -154,7 +155,7 @@ vrrp_instance VI_1 {
         auth_pass 1111
     }
     virtual_ipaddress {
-        192.168.14.10
+        192.168.9.190
     }
 }
 ```

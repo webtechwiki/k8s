@@ -70,7 +70,7 @@ scp root@kb200.host.com:/opt/certs/kubelet/kubelet.pem ./
 kubectl config set-cluster myk8s \
     --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
     --embed-certs=true \
-    --server=https://192.168.14.10:7443 \
+    --server=https://192.168.9.190:7443 \
     --kubeconfig=kubelet.kubeconfig
 ```
 

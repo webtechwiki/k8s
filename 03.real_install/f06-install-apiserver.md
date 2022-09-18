@@ -137,12 +137,12 @@ mkdir -p /opt/kubernetes/server/bin/conf
 ```shell
 #!/bin/bash
 ./kube-apiserver \
-    --service-account-issuer token-issuer \
-    --service-account-signing-key-file ./certs/ca-key.pem \
+    --service-account-issuer https://kubernetes.default.svc.cluster.local \
+    --service-account-signing-key-file ./certs/ca.pem \
     --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
     --audit-policy-file ./conf/audit.yaml \
     --authorization-mode RBAC \
-    --bind-address 192.168.9.160 \
+    --bind-address 0.0.0.0 \
     --advertise-address 192.168.9.160 \
     --client-ca-file ./certs/ca.pem \
     --requestheader-client-ca-file ./certs/ca.pem \
@@ -252,3 +252,32 @@ supervisorctl update
 此时，还可以使用`netstat -luntp | grep kube-api`命令查看网络服务的端口是否正常，如果正常，将返回如下内容
 
 ![20220917123050](./img/06-02.png)
+
+## 四、生成用户
+
+```bash
+# 1 设置集群参数(注意：单master集群为master节点私网IP，高可用集群为虚拟IP)
+kubectl config set-cluster kubernetes \
+  --server=https://192.168.9.199:6443 \
+  --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
+  --embed-certs=true \
+  --kubeconfig=config
+
+
+# 2 设置客户端认证参数
+kubectl config set-credentials cluster-admin \
+  --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
+  --embed-certs=true \
+  --client-key=/opt/kubernetes/server/bin/certs/client-key.pem \
+  --client-certificate=/opt/kubernetes/server/bin/certs/client.pem \
+  --kubeconfig=config
+  
+# 3 设置上下文参数
+kubectl config set-context default \
+  --cluster=kubernetes \
+  --user=cluster-admin \
+  --kubeconfig=config
+  
+# 4 设置默认上下文
+kubectl config use-context default --kubeconfig=config
+```
