@@ -348,7 +348,50 @@ EOF
 cfssl gencert -ca=/opt/certs/ca.pem -ca-key=/opt/certs/ca-key.pem -config=/opt/certs/ca-config.json -profile=peer admin-csr.json | cfssljson -bare admin
 ```
 
-### 3.7 kube-proxy
+### 3.7 kubelet
+
+## 1. 签发证书
+
+kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机，下面将为`kubelet`创建ssl证书
+
+
+创建证书信息文件`/opt/certs/kubelet/kubelet-scr.json`文件，添加以下内容
+
+```json
+{
+    "CN": "k8s-kubelet",
+    "hosts": [
+        "127.0.0.1",
+        "192.168.14.10",
+        "192.168.14.11",
+        "192.168.14.12",
+        "192.168.14.21",
+        "192.168.14.22",
+        "192.168.14.200"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "name": [
+        {
+            "C": "CN",
+            "ST": "Guangdong",
+            "L": "Guangzhou",
+            "O": "od",
+            "OU": "ops"
+        }
+    ]
+}
+```
+
+使用以下命令创建证书
+
+```shell
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server kubelet-scr.json | cfssljson -bare kubelet
+```
+
+### 3.8 kube-proxy
 
 定义证书信息
 
