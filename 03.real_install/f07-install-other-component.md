@@ -21,20 +21,20 @@ kubectl config set-cluster kubernetes \
      --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
 
 # 设置一个环境项，一个上下文
-kubectl config set-context kube-controller-manager@kubernetes \
+kubectl config set-context system:kube-controller-manager@kubernetes \
     --cluster=kubernetes \
-    --user=kube-controller-manager \
+    --user=system:kube-controller-manager \
     --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
 
 # 设置一个用户项
-kubectl config set-credentials kube-controller-manager \
+kubectl config set-credentials system:kube-controller-manager \
      --client-certificate=/opt/certs/controller-manager/controller-manager.pem \
      --client-key=/opt/certs/controller-manager/controller-manager-key.pem \
      --embed-certs=true \
      --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
 
 # 设置默认环境
-kubectl config use-context kube-controller-manager@kubernetes \
+kubectl config use-context system:kube-controller-manager@kubernetes \
      --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
 ```
 
@@ -119,20 +119,20 @@ kubectl config set-cluster kubernetes \
      --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
 
 # 设置一个环境项，一个上下文
-kubectl config set-credentials kube-scheduler \
+kubectl config set-credentials system:kube-scheduler \
      --client-certificate=/opt/certs/scheduler/scheduler.pem \
      --client-key=/opt/certs/scheduler/scheduler-key.pem \
      --embed-certs=true \
      --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
 
 # 设置一个用户项
-kubectl config set-context kube-scheduler@kubernetes \
+kubectl config set-context system:kube-scheduler@kubernetes \
      --cluster=kubernetes \
-     --user=kube-scheduler \
+     --user=system:kube-scheduler \
      --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
 
 # 设置默认环境
-kubectl config use-context kube-scheduler@kubernetes \
+kubectl config use-context system:kube-scheduler@kubernetes \
      --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
 ```
 

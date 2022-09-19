@@ -256,7 +256,7 @@ mkdir -p /opt/certs/controller-manager/
 cd /opt/certs/controller-manager/
 cat > /opt/certs/controller-manager/controller-manager-csr.json <<EOF
 {
-    "CN": "apiserver",
+    "CN": "system:kube-controller-manager",
     "key": {
         "algo": "rsa",
         "size": 2048
@@ -265,8 +265,8 @@ cat > /opt/certs/controller-manager/controller-manager-csr.json <<EOF
         "C": "CN",
         "ST": "Guangdong",
         "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "controller-manager"
+        "O": "system:kube-controller-manager",
+        "OU": "Kubernetes-manual"
     }]
 }
 EOF
@@ -278,38 +278,7 @@ EOF
 cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer controller-manager-csr.json | cfssljson -bare controller-manager
 ```
 
-### 3.4 kube-proxy
-
-定义证书信息
-
-```bash
-mkdir -p /opt/certs/proxy/
-cd /opt/certs/proxy/
-cat > /opt/certs/proxy/proxy-csr.json <<EOF
-{
-    "CN": "apiserver",
-    "key": {
-        "algo": "rsa",
-        "size": 2048
-    },
-    "names": [{
-        "C": "CN",
-        "ST": "Guangdong",
-        "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "proxy"
-    }]
-}
-EOF
-```
-
-生成证书
-
-```bash
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer proxy-csr.json | cfssljson -bare proxy
-```
-
-### 3.5 kube-scheduler
+### 3.4 kube-scheduler
 
 定义证书信息
 
@@ -318,7 +287,7 @@ mkdir -p /opt/certs/scheduler/
 cd /opt/certs/scheduler/
 cat > /opt/certs/scheduler/scheduler-csr.json <<EOF
 {
-    "CN": "apiserver",
+    "CN": "system:kube-scheduler",
     "key": {
         "algo": "rsa",
         "size": 2048
@@ -327,8 +296,8 @@ cat > /opt/certs/scheduler/scheduler-csr.json <<EOF
         "C": "CN",
         "ST": "Guangdong",
         "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "scheduler"
+        "O": "system:kube-scheduler",
+        "OU": "Kubernetes-manual"
     }]
 }
 EOF
@@ -340,14 +309,14 @@ EOF
 cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer scheduler-csr.json | cfssljson -bare scheduler
 ```
 
-### 3.6 创建ServiceAccount Key
+### 3.5 创建ServiceAccount Key
 
 ```bash
 openssl genrsa -out /opt/certs/sa.key 2048
 openssl rsa -in /opt/certs/sa.key -pubout -out /opt/certs/sa.pub
 ```
 
-### 3.7 创建admin证书
+### 3.6 创建admin证书
 
 创建证书信息
 
@@ -377,4 +346,35 @@ EOF
 
 ```bash
 cfssl gencert -ca=/opt/certs/ca.pem -ca-key=/opt/certs/ca-key.pem -config=/opt/certs/ca-config.json -profile=peer admin-csr.json | cfssljson -bare admin
+```
+
+### 3.7 kube-proxy
+
+定义证书信息
+
+```bash
+mkdir -p /opt/certs/proxy/
+cd /opt/certs/proxy/
+cat > /opt/certs/proxy/proxy-csr.json <<EOF
+{
+    "CN": "system:kube-proxy",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [{
+        "C": "CN",
+        "ST": "Guangdong",
+        "L": "Guangzhou",
+        "O": "system:kube-proxy",
+        "OU": "Kubernetes-manual"
+    }]
+}
+EOF
+```
+
+生成证书
+
+```bash
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer proxy-csr.json | cfssljson -bare proxy
 ```
