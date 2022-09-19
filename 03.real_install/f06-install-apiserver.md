@@ -50,7 +50,7 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 ```json
 {
-    "CN": "etcd",
+    "CN": "apiserver",
     "hosts": [
         "192.168.0.1",
         "kubernetes.default",
@@ -59,8 +59,7 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
         "kubernetes.default.svc.cluster.local",
         "192.168.9.199",
         "192.168.9.192",
-        "192.168.9.160",
-        "192.168.14.165"
+        "192.168.9.160"
     ],
     "key": {
         "algo": "rsa",
