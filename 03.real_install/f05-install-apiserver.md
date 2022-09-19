@@ -181,6 +181,7 @@ rm -rf server/bin/*.tar
 `--tls-private-key-file`：访问apiserver时使用，tls证书私钥文件
 `--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
 `--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
+`--requestheader-allowed-names`：允许访问的客户端 common names 列表，通过 header 中 –requestheader-username-headers 参数指定的字段获取。客户端 common names 的名称需要在 client-ca-file 中进行设置，将其设置为空值时，表示任意客户端都可访问。
 
 以上是我们在启动apiserver的时候常用的参数，apiserver具有很多参数，很多参数也有默认值，可以`./kube-apiserver --hep`命令查看更多的帮助。
 
