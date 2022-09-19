@@ -337,3 +337,10 @@ EOF
 ```bash
 cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer scheduler-csr.json | cfssljson -bare scheduler
 ```
+
+### 3.6 创建ServiceAccount Key
+
+```bash
+openssl genrsa -out /opt/certs/sa.key 2048
+openssl rsa -in /opt/certs/sa.key -pubout -out /opt/certs/sa.pub
+```

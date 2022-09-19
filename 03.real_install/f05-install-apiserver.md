@@ -91,13 +91,13 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 
 ```shell
 # 下载指定的服务器二进制包
-wget https://dl.k8s.io/v1.25.1/kubernetes-server-linux-amd64.tar.gz
+wget https://dl.k8s.io/v1.24.1/kubernetes-server-linux-amd64.tar.gz
 # 解压安装包
 tar -zxvf kubernetes-server-linux-amd64.tar.gz
 # 将安装包移到/opt目录下并根据版本重命名
-mv kubernetes /opt/kubernetes-v1.25.1
+mv kubernetes /opt/kubernetes-v1.24.1
 # 创建软连接
-ln -s /opt/kubernetes-v1.25.1/ /opt/kubernetes
+ln -s /opt/kubernetes-v1.24.1/ /opt/kubernetes
 ```
 
 在k8s二进制安装目录里包含了k8s源码包，还包含k8s核心组件的docker镜像，因为我们的核心服务不运行在容器里，所以可以删除掉，操作过程如下
@@ -113,61 +113,42 @@ rm -rf server/bin/*.tar
 
 ## 三、启动apiser服务器
 
-准备证书
-
-```shell
-# 创建证书目录
-mkdir -p /opt/kubernetes/server/bin/certs
-# 进入证书目录
-cd /opt/kubernetes/server/bin/certs
-# 从证书服务器下载证书
-scp debian@199-debian.k8s.com:/opt/certs/ca.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/ca-key.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/kubernetes/apiserver.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/kubernetes/apiserver-key.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/kubernetes/client.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/kubernetes/client-key.pem ./
-# 创建apiserver启动配置文件目录
-mkdir -p /opt/kubernetes/server/bin/conf
-```
-
 在apiserver二进制文件目录创建`/opt/kubernetes/server/bin/kube-apiserver.sh`启动脚本文件，写入以下内容
 
 ```shell
 #!/bin/bash
 ./kube-apiserver \
-    --service-account-issuer https://kubernetes.default.svc.cluster.local \
-    --service-account-signing-key-file ./certs/ca.pem \
-    --audit-log-path /data/log/kubernetes/kube-apiserver/audit-log \
-    --audit-policy-file ./conf/audit.yaml \
-    --authorization-mode RBAC \
-    --bind-address 0.0.0.0 \
-    --advertise-address 192.168.9.160 \
-    --client-ca-file ./certs/ca.pem \
-    --requestheader-client-ca-file ./certs/ca.pem \
-    --enable-admission-plugins NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,MutatingAdmissionWebhook,ValidatingAdmissionWebhook,ResourceQuota \
-    --etcd-cafile ./certs/ca.pem \
-    --etcd-certfile ./certs/client.pem \
-    --etcd-keyfile ./certs/client-key.pem \
-    --etcd-servers https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379 \
-    --service-account-key-file ./certs/ca-key.pem \
-    --service-cluster-ip-range 192.168.0.0/16 \
-    --service-node-port-range 3000-29999 \
-    --kubelet-client-certificate ./certs/client.pem \
-    --kubelet-client-key ./certs/client-key.pem \
-    --log-dir /data/logs/kubernetes/kube-apiserver \
-    --tls-cert-file ./certs/apiserver.pem \
-    --tls-private-key-file ./certs/apiserver-key.pem \
-    --v 2 
-```
-
-接下在`bin`目录下的`conf`目录来创建一个`audit.yaml`，写入内容如下
-
-```shell
-apiVersion: audit.k8s.io/v1
-kind: Policy
-rules:
-- level: Metadata
+    --v=2 \
+    --allow-privileged=true  \
+    --service-account-issuer=https://kubernetes.default.svc.cluster.local \
+    --authorization-mode=Node,RBAC \
+    --bind-address=0.0.0.0 \
+    --secure-port=6443  \
+    --advertise-address=192.168.9.199 \
+    --client-ca-file=/opt/certs/ca.pem \
+    --requestheader-client-ca-file=/opt/certs/ca.pem \
+    --proxy-client-cert-file=/opt/certs/apiserver/apiserver-front-proxy-client.pem  \
+    --proxy-client-key-file=/opt/certs/apiserver/apiserver-front-proxy-client-key.pem  \
+    --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname  \
+    --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota  \
+    --etcd-cafile=/opt/certs/ca.pem \
+    --etcd-certfile=/opt/certs/apiserver/apiserver.pem \
+    --etcd-keyfile=/opt/certs/apiserver/apiserver-key.pem \
+    --etcd-servers=https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379 \
+    --service-account-key-file=/opt/certs/sa.pub \
+    --service-account-signing-key-file=/opt/certs/sa.key \
+    --service-cluster-ip-range=10.96.0.0/12 \
+    --service-node-port-range=30000-32767 \
+    --enable-bootstrap-token-auth=true  \
+    --kubelet-client-certificate=/opt/certs/apiserver/apiserver.pem \
+    --kubelet-client-key=/opt/certs/apiserver/apiserver-key.pem \
+    --tls-cert-file=/opt/certs/apiserver/apiserver.pem \
+    --tls-private-key-file=/opt/certs/apiserver/apiserver-key.pem \
+    --requestheader-allowed-names=aggregator  \
+    --requestheader-group-headers=X-Remote-Group  \
+    --requestheader-extra-headers-prefix=X-Remote-Extra-  \
+    --requestheader-username-headers=X-Remote-User \
+    --enable-aggregator-routing=true
 ```
 
 参数说明
@@ -251,32 +232,3 @@ supervisorctl update
 此时，还可以使用`netstat -luntp | grep kube-api`命令查看网络服务的端口是否正常，如果正常，将返回如下内容
 
 ![20220917123050](./img/06-02.png)
-
-## 四、生成用户
-
-```bash
-# 1 设置集群参数(注意：单master集群为master节点私网IP，高可用集群为虚拟IP)
-kubectl config set-cluster kubernetes \
-  --server=https://192.168.9.199:6443 \
-  --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
-  --embed-certs=true \
-  --kubeconfig=config
-
-
-# 2 设置客户端认证参数
-kubectl config set-credentials cluster-admin \
-  --certificate-authority=/opt/kubernetes/server/bin/certs/ca.pem \
-  --embed-certs=true \
-  --client-key=/opt/kubernetes/server/bin/certs/client-key.pem \
-  --client-certificate=/opt/kubernetes/server/bin/certs/client.pem \
-  --kubeconfig=config
-  
-# 3 设置上下文参数
-kubectl config set-context default \
-  --cluster=kubernetes \
-  --user=cluster-admin \
-  --kubeconfig=config
-  
-# 4 设置默认上下文
-kubectl config use-context default --kubeconfig=config
-```
