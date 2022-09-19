@@ -47,7 +47,7 @@ cd /opt/certs
             "L": "Guangzhou",
             "ST": "Guangdong",
             "O": "k8s",
-            "OU": "ops"
+            "OU": "CA"
         }
     ],
     "ca": {
@@ -80,7 +80,7 @@ ca的expiry字段代表有效时间，175200h代表20年
 使用 `cfssl` 命令生成证书，但生成的证书内容只会输入在控制台中，所以需要使用`cfssl-json`生成承载式证书写入到文件中，如下命令
 
 ```bash
-cfssl gencert -initca ca-csr.json | cfssljson -bare ca -
+cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```
 
 生成以下三个文件
@@ -250,6 +250,8 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 定义证书信息
 
 ```bash
+mkdir -p /opt/certs/controller-manager/
+cd /opt/certs/controller-manager/
 cat > /opt/certs/controller-manager/controller-manager-csr.json <<EOF
 {
     "CN": "apiserver",
@@ -279,6 +281,8 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 定义证书信息
 
 ```bash
+mkdir -p /opt/certs/proxy/
+cd /opt/certs/proxy/
 cat > /opt/certs/proxy/proxy-csr.json <<EOF
 {
     "CN": "apiserver",
@@ -308,6 +312,8 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 定义证书信息
 
 ```bash
+mkdir -p /opt/certs/scheduler/
+cd /opt/certs/scheduler/
 cat > /opt/certs/scheduler/scheduler-csr.json <<EOF
 {
     "CN": "apiserver",

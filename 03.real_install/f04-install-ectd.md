@@ -2,100 +2,7 @@
 
 我们将使用`199-debian`、`192-debian`、`160-debian`这三台主机搭建ectd集群。
 
-## 一、准备ssl证书
-
-登录到`199-debian`证书签发服务器。在本系列的前面的篇章中，我们已经进行了根证书的签发。现在我们需要基于证书服务器的根证书为etcd服务创建ssl证书。以下是具体的签发过程
-
-### 1.1 定义证书信息
-
-我们先在`/opt/certs/`创建`ca-config.json`文件，定义证书的配置信息，写入如下内容
-
-```json
-{
-  "signing": {
-    "default": {
-      "expiry": "175200h"
-    },
-    "profiles": {
-      "server": {
-         "expiry": "175200h",
-         "usages": [
-            "signing",
-            "key encipherment",
-            "server auth"
-        ]
-      },
-      "client": {
-         "expiry": "175200h",
-         "usages": [
-            "signing",
-            "key encipherment",
-            "client auth"
-        ]
-      },
-      "peer": {
-         "expiry": "175200h",
-         "usages": [
-            "signing",
-            "key encipherment",
-            "server auth",
-            "client auth"
-        ]
-      }
-    }
-  }
-}
-```
-
-上面的文件定义了证书的基本信息，其中`profiles`里可以包含多个档案对象。我们定了三个节点，关键不同的配置在`usages`节点，如下：
-
-`server`：服务器去连接客户端时，需要证书
-`client`：客户端去连接服务器时，需要证书
-`peer`：是服务器与客户端交换数据，都需要证书，接下来我们将基于`peer`属性创建证书。
-
-接下来在`/opt/certs/etcd`目录创建证书请求文件`etcd-peer-csr.json`，写入以下内容
-
-```json
-{
-    "CN": "etcd",
-    "hosts": [
-        "192.168.9.199",
-        "192.168.9.192",
-        "192.168.9.160",
-        "192.168.14.165"
-    ],
-    "key": {
-        "algo": "rsa",
-        "size": 2048
-    },
-    "names": [{
-        "C": "CN",
-        "ST": "Guangdong",
-        "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "ops"
-    }]
-}
-```
-
-相关参数：
-
-- `CN`：证书名称
-- `hosts`：颁发的主机
-- `key`：定义证书类型，algo为加密类型，size为加密长度
-- `names`：证书的基本信息
-
-### 1.2 向签证机构（CA）申请证书
-
-完成以上步骤，使用以下命令给客户端申请证书
-
-```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer etcd-peer-csr.json | cfssljson -bare etcd-peer
-```
-
-## 二、安装ectd
-
-### 3.1 创建运行用户
+## 一、创建运行用户
 
 我们将在`199-debian`、`192-debian`、`160-debian`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5.4`，我们选择一个较新的版本`v3.5.4`，具体操作如下：
 
@@ -105,7 +12,7 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 useradd -s /sbin/nologin -M etcd
 ```
 
-### 3.2 安装
+## 二、安装
 
 ```shell
 # 下载对应版本
@@ -118,29 +25,16 @@ mv etcd-v3.5.4-linux-amd64/ /opt/etcd-v3.5.4
 ln -s /opt/etcd-v3.5.4 /opt/etcd
 # 创建etcd证书目录和数据目录
 mkdir -p /opt/etcd/certs /data/etcd/etcd-server /data/logs/etcd-server
-# 进入证书目录
-cd /opt/etcd/certs
 # 从证书服务器下载证书
+cd /opt/
 scp debian@199-debian.k8s.com:/opt/certs/ca.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/etcd/etcd-peer.pem ./
-scp debian@199-debian.k8s.com:/opt/certs/etcd/etcd-peer-key.pem ./
-```
-
-此时，使用`ls -l`命令可查看到两张证书和一个私钥文件，如下内容
-
-```shell
-[root@kb12 certs]# ls -l
-total 12
--rw-r--r-- 1 root root 1350 Feb 24 17:32 ca.pem
--rw------- 1 root root 1675 Feb 24 17:33 etcd-peer-key.pem
--rw-r--r-- 1 root root 1415 Feb 24 17:33 etcd-peer.pem
 ```
 
 给所有etcd用户需要读写的目录赋予权限
 
 ```shell
 # 将目录权限改为etcd用户
-chown -R etcd.etcd /opt/etcd/certs /data/etcd /data/logs/etcd-server
+chown -R etcd.etcd /opt/certs/etcd/ /data/etcd /data/logs/etcd-server
 ```
 
 ## 三、编写etcd启动脚本
@@ -289,12 +183,20 @@ ln -s /opt/etcd/etcdctl /usr/local/bin/etcdctl
 我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
 
 ```shell
-etcdctl --cacert="/opt/etcd/certs/ca.pem" --cert="/opt/etcd/certs/etcd-peer.pem" --key="/opt/etcd/certs/etcd-peer-key.pem" --endpoints="https://192.168.9.199:2379,https://192.168.9.199:2379,https://192.168.9.199:2379" endpoint health --write-out=table
+etcdctl --cacert="/opt/certs/ca.pem" --cert="/opt/certs/etcd/etcd-peer.pem" --key="/opt/certs/etcd/etcd-peer-key.pem" --endpoints="https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379" endpoint status --write-out=table
 ```
 
 如果看到如下输出，代表 ectd 集群搭建成功
 
-![20220918005018](./img/05-01.png)
+```bash
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|          ENDPOINT          |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| https://192.168.9.199:2379 | c8815bb4b21730b3 |   3.5.4 |  311 kB |      true |      false |         3 |      37628 |              37628 |        |
+| https://192.168.9.192:2379 | f30299e8a0b43b4d |   3.5.4 |  311 kB |     false |      false |         3 |      37628 |              37628 |        |
+| https://192.168.9.160:2379 | 61c90f737ccf2682 |   3.5.4 |  311 kB |     false |      false |         3 |      37628 |              37628 |        |
++----------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+```
 
 为了验证etcd集群是否正常工作，我们还可以现在`199-debian`设置一个值，如下
 
