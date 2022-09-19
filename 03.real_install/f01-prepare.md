@@ -2,6 +2,8 @@
 
 ## 一、物理机器准备
 
+### 1.1 集群主机概述
+
 准备基础的设备如下
 
 |      IP       |            操作系统            |               配置               |             备注              |
@@ -17,6 +19,17 @@
 - 192.168.9.192: etcd服务器、Proxy的L4、L7代理、控制节点、工作节点
 
 - 192.168.9.192: etcd服务器、控制节点、工作节点
+
+### 1.2 k8s相关组件版本
+
+|             组件              |   版本   |                                                    下载链接                                                     |
+| ----------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| kubernetes-server-linux-amd64 | v1.24.1  | <https://dl.k8s.io/v1.24.1/kubernetes-server-linux-amd64.tar.gz>                                                |
+| etcd                          | v3.5.4   | <https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz>                       |
+| docker-ce                     | 20.10.14 | <https://download.docker.com/linux/static/stable/x86_64/docker-20.10.14.tgz>                                    |
+| cni-plugins-linux-amd64       | v1.1.1   | <https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz>    |
+| containerd                    | 1.6.4    | <https://github.com/containerd/containerd/releases/download/v1.6.4/cri-containerd-cni-1.6.4-linux-amd64.tar.gz> |
+| crictl                        | v1.24.2  | <https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz>      |
 
 ## 二、初始化域名解析服务器
 
@@ -156,3 +169,88 @@ ping 199-debian.k8s.com
 我们在 `/etc/resolv.conf` 文件中修改只是让主机临时生效，如果重启之后，系统将会根据网卡配置来指定对应的 域名解析服务器，所以永久生效的方式应当是 修改网卡 配置中的DNS域名。
 
 `/etc/resolv.conf` 设置域名解析时，主机域名（专门用于访问主机的域名）可以使用 `search` 标注查询的主机域，但注意业务域名（用于部署项目的域名）不要使用这个配置。
+
+## 四、集群环境初始化配置
+
+### 4.1 安装ipvsadm
+
+```bash
+apt install ipvsadm ipset sysstat conntrack -y
+cat >> /etc/modules-load.d/ipvs.conf <<EOF 
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+ip_tables
+ip_set
+xt_set
+ipt_set
+ipt_rpfilter
+ipt_REJECT
+ipip
+EOF
+
+systemctl restart systemd-modules-load.service
+```
+
+查看已载入系统的模块
+
+```bash
+lsmod | grep -e ip_vs -e nf_conntrack
+```
+
+返回如下类似内容代表正确安装
+
+```bash
+root@debian:/home/debian# lsmod | grep -e ip_vs -e nf_conntrack
+ip_vs_sh               16384  0
+ip_vs_wrr              16384  0
+ip_vs_rr               16384  0
+ip_vs                 184320  6 ip_vs_rr,ip_vs_sh,ip_vs_wrr
+nf_conntrack_netlink    57344  0
+nf_conntrack          176128  6 xt_conntrack,nf_nat,xt_nat,nf_conntrack_netlink,xt_MASQUERADE,ip_vs
+nf_defrag_ipv6         24576  2 nf_conntrack,ip_vs
+nf_defrag_ipv4         16384  1 nf_conntrack
+nfnetlink              20480  5 nft_compat,nf_conntrack_netlink,nf_tables,ip_set
+libcrc32c              16384  5 nf_conntrack,nf_nat,nf_tables,raid456,ip_v
+```
+
+### 4.2 修改内核参数
+
+```bash
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-iptables = 1
+fs.may_detach_mounts = 1
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+fs.inotify.max_user_watches=89100
+fs.file-max=52706963
+fs.nr_open=52706963
+net.netfilter.nf_conntrack_max=2310720
+
+
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_probes = 3
+net.ipv4.tcp_keepalive_intvl =15
+net.ipv4.tcp_max_tw_buckets = 36000
+net.ipv4.tcp_tw_reuse = 1
+net.ipv4.tcp_max_orphans = 327680
+net.ipv4.tcp_orphan_retries = 3
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 16384
+net.ipv4.ip_conntrack_max = 65536
+net.ipv4.tcp_max_syn_backlog = 16384
+net.ipv4.tcp_timestamps = 0
+net.core.somaxconn = 16384
+
+net.ipv6.conf.all.disable_ipv6 = 0
+net.ipv6.conf.default.disable_ipv6 = 0
+net.ipv6.conf.lo.disable_ipv6 = 0
+net.ipv6.conf.all.forwarding = 0
+
+EOF
+
+sysctl --system
+```

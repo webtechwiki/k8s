@@ -75,7 +75,8 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 ### 3.3 第二章：在debian物理机器使用二进制安装包搭建集群
 
-- [01.物理机器k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
+- [01.k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
+- [02.安装Containerd作为Runtime](./03.real_install/f02-install_containerd.md)
 - [02.证书签发环境准备](./03.real_install/f02-sign-prepare.md)
 - [03.通过二进制安装包安装docker](./03.real_install/f03-install-docker.md)
 - [04.安装harhor服务](./03.real_install/f04-install-harbor.md)
