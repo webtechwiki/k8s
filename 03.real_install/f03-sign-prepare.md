@@ -155,7 +155,8 @@ cat > /opt/certs/etcd/etcd-peer-csr.json <<EOF
     "hosts": [
         "192.168.9.199",
         "192.168.9.192",
-        "192.168.9.160"
+        "192.168.9.160",
+        "192.168.9.190"
     ],
     "key": {
         "algo": "rsa",
@@ -198,7 +199,8 @@ cat > /opt/certs/apiserver/apiserver-csr.json <<EOF
         "kubernetes.default.svc.cluster.local",
         "192.168.9.199",
         "192.168.9.192",
-        "192.168.9.160"
+        "192.168.9.160",
+        "192.168.9.190"
     ],
     "key": {
         "algo": "rsa",
