@@ -346,3 +346,35 @@ cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -pro
 openssl genrsa -out /opt/certs/sa.key 2048
 openssl rsa -in /opt/certs/sa.key -pubout -out /opt/certs/sa.pub
 ```
+
+### 3.7 创建admin证书
+
+创建证书信息
+
+```bash
+cd /opt/certs/admin
+cat > admin-csr.json << EOF 
+{
+  "CN": "admin",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "CN",
+      "ST": "Guangzhou",
+      "L": "Guangdong",
+      "O": "system:masters",
+      "OU": "Kubernetes-manual"
+    }
+  ]
+}
+EOF
+```
+
+生成证书
+
+```bash
+cfssl gencert -ca=/opt/certs/ca.pem -ca-key=/opt/certs/ca-key.pem -config=/opt/certs/ca-config.json -profile=peer admin-csr.json | cfssljson -bare admin
+```

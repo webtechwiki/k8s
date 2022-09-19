@@ -202,8 +202,8 @@ kubectl config set-cluster kubernetes \
 
 # 设置一个环境项，一个上下文
 kubectl config set-credentials kubernetes-admin \
-  --client-certificate=/opt/certs/apiserver/apiserver.pem \
-  --client-key=/opt/certs/apiserver/apiserver-key.pem \
+  --client-certificate=/opt/certs/admin/admin.pem \
+  --client-key=/opt/certs/admin/admin-key.pem \
   --embed-certs=true \
   --kubeconfig=/etc/kubernetes/admin.kubeconfig
 
