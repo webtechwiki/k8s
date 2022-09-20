@@ -2,39 +2,39 @@
 
 我们将使用`199-debian`、`192-debian`、`160-debian`这三台主机搭建ectd集群。
 
-## 一、创建运行用户
+## 一、etcd相关参数
 
-我们将在`199-debian`、`192-debian`、`160-debian`这三台主机上安装etcd，组成一个ectd集群。在撰写这篇文档的时候吗，etcd最新的版本是`3.5.4`，我们选择一个较新的版本`v3.5.4`，具体操作如下：
+常见参数说明说下
 
-先创建一个ectd用户，禁止该用户远程登录，并且没有家目录，如下命令
-
-```shell
-useradd -s /sbin/nologin -M etcd
-```
+|             参数              |           对应环境变量           |                                                                                                                                                                             说明                                                                                                                                                                              |
+| ----------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --name                        | ETCD_NAME                        | 当前etcd的唯一名称，要保证和其他节点不冲突                                                                                                                                                                                                                                                                                                                    |
+| --data-dir                    | ETCD_DATA_DIR                    | 指定etcd存储数据的存储位置                                                                                                                                                                                                                                                                                                                                    |
+| --listen-peer-urls            | ETCD_LISTEN_PEER_URLS            | 端对端的通信url，包含主机地址和端口号，指定当前etcd和其他节点etcd通信时的服务地址和端口。假如etcd集群中包含三个etcd服务，那么三个etcd节点构成了一个高可用集群，etcd集群会自动选举一个节点作为主节点，另外两个节点作为从节点。所有的写入操作将往主节点写，所有的读操作在从节点上读，这是etcd读写的过程。上述设置的2380端口，用来监听其他etcd节点发送过来的数据 |
+| --listen-client-urls          | ETCD_LISTEN_CLIENT_URLS          | 指定当前etcd接收客户端指令的地址和端口，在这里的客户端我们指的是k8s集群的master节点                                                                                                                                                                                                                                                                           |
+| --initial-advertise-peer-urls | ETCD_INITIAL_ADVERTISE_PEER_URLS | 指定etcd广播端口，当前etcd会将数据同步到其他节点，通过2380端口发送                                                                                                                                                                                                                                                                                            |
+| --advertise-client-urls       | ETCD_ADVERTISE_CLIENT_URLS       | 给客户端通告的端口                                                                                                                                                                                                                                                                                                                                            |
+| --initial-cluster             | ETCD_INITIAL_CLUSTER             | 定义etcd集群中所有节点的名称和IP，以及通信端口                                                                                                                                                                                                                                                                                                                |
+| --initial-cluster-token       | ETCD_INITIAL_CLUSTER_TOKEN       | 定义etcd中的token，所有节点的token必须保持一致                                                                                                                                                                                                                                                                                                                |
+| --initial-cluster-state       | ETCD_INITIAL_CLUSTER_STATE       | 定义etcd集群的状态，new代表新建集群，existing代表加入现有集群                                                                                                                                                                                                                                                                                                 |
 
 ## 二、安装
 
+先创建etcd默认的配置文件目录和数据目录
+
+```bash
+mkdir -p /var/lib/etcd/
+```
+
+安装到`/opt`目录，后续的k8s集群组件我们将都安装在此
+
 ```shell
-# 下载对应版本
-wget https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
 # 解压
 tar -zxvf etcd-v3.5.4-linux-amd64.tar.gz
 # 将etc移到/opt目录，并修改etcd目录名
 mv etcd-v3.5.4-linux-amd64/ /opt/etcd-v3.5.4
 # 创建etcd软链接
 ln -s /opt/etcd-v3.5.4 /opt/etcd
-# 创建etcd证书目录和数据目录
-mkdir -p /opt/etcd/certs /data/etcd/etcd-server /data/logs/etcd-server
-# 从证书服务器下载证书
-cd /opt/
-scp debian@199-debian.k8s.com:/opt/certs/ca.pem ./
-```
-
-给所有etcd用户需要读写的目录赋予权限
-
-```shell
-# 将目录权限改为etcd用户
-chown -R etcd.etcd /opt/certs/etcd/ /data/etcd /data/logs/etcd-server
 ```
 
 ## 三、编写etcd启动脚本
@@ -43,58 +43,35 @@ chown -R etcd.etcd /opt/certs/etcd/ /data/etcd /data/logs/etcd-server
 
 ```shell
 #!/bin/bash
-./etcd --name etcd-server-199 \
-  --data-dir /data/etcd/etcd-server \
-  --listen-peer-urls https://192.168.9.199:2380 \
-  --listen-client-urls https://192.168.9.199:2379,http://127.0.0.1:2379 \
-  --quota-backend-bytes 8000000000 \
-  --initial-advertise-peer-urls https://192.168.9.199:2380 \
-  --advertise-client-urls https://192.168.9.199:2379,http://127.0.0.1:2379 \
-  --initial-cluster etcd-server-199=https://192.168.9.199:2380,etcd-server-192=https://192.168.9.192:2380,etcd-server-160=https://192.168.9.160:2380 \
-  --initial-cluster-token="etcd-token" \
-  --initial-cluster-state=new \
-  --cert-file ./certs/etcd-peer.pem \
-  --key-file ./certs/etcd-peer-key.pem \
-  --client-cert-auth \
-  --trusted-ca-file ./certs/ca.pem \
-  --peer-cert-file ./certs/etcd-peer.pem \
-  --peer-key-file ./certs/etcd-peer-key.pem \
+./etcd \
+  --name="etcd-server-199" \
+  --data-dir="/var/lib/etcd/" \
+  --listen-peer-urls="https://192.168.9.199:2380" \
+  --listen-client-urls="https://192.168.9.199:2379,http://127.0.0.1:2379" \
+  --initial-advertise-peer-urls="https://192.168.9.199:2380" \
+  --advertise-client-urls="https://192.168.9.199:2379" \
+  --initial-cluster="etcd-server-199=https://192.168.9.199:2380,etcd-server-192=https://192.168.9.192:2380,etcd-server-160=https://192.168.9.160:2380" \
+  --initial-cluster-token="etcd-cluster" \
+  --initial-cluster-state="new" \
+  --cert-file="/etc/kubernetes/pki/etcd.pem" \
+  --key-file="/etc/kubernetes/pki/etcd-key.pem" \
+  --trusted-ca-file="/etc/kubernetes/pki/ca.pem" \
+  --peer-cert-file="/etc/kubernetes/pki/etcd.pem" \
+  --peer-key-file="/etc/kubernetes/pki/etcd-key.pem" \
+  --peer-trusted-ca-file="/etc/kubernetes/pki/ca.pem" \
   --peer-client-cert-auth \
-  --peer-trusted-ca-file ./certs/ca.pem
+  --client-cert-auth
 ```
 
 给启动脚本添加权限
 
 ```shell
-chmod +x startup.sh
+chmod +x /opt/etcd/startup.sh
 ```
-
-参数说明：
-
-`--name`：当前etcd的唯一名称，要保证和其他节点不冲突，环境变量: ETCD_DATA_DIR
-`--data-dir`：指定etcd存储数据的存储位置，环境变量: ETCD_NAME
-`--listen-peer-urls`：端对端的通信url，包含主机地址和端口号，指定当前etcd和其他节点etcd通信时的服务地址和端口。假如etcd集群中包含三个etcd服务，那么三个etcd节点构成了一个高可用集群，etcd集群会自动选举一个节点作为主节点，另外两个节点作为从节点。所有的写入操作将往主节点写，所有的读操作在从节点上读，这是etcd读写的过程。上述设置的2380端口，用来监听其他etcd节点发送过来的数据，环境变量: ETCD_LISTEN_PEER_URLS
-`--listen-client-urls`：指定当前etcd接收客户端指令的地址和端口，在这里的客户端我们指的是k8s集群的master节点，环境变量: ETCD_LISTEN_CLIENT_URLS
-`--quota-backend-bytes`：后端的配额
-`--initial-advertise-peer-urls`：指定etcd广播端口，当前etcd会将数据同步到其他节点，通过2380端口发送，环境变量: ETCD_INITIAL_ADVERTISE_PEER_URLS
-`--advertise-client-urls`：给客户端通告的端口，环境变量: ETCD_ADVERTISE_CLIENT_URLS
-`--initial-cluster`：定义etcd集群中所有节点的名称和IP，以及通信端口，环境变量: ETCD_INITIAL_CLUSTER
-`--initial-cluster-token`：定义etcd中的token，所有节点的token必须保持一致，环境变量: ETCD_INITIAL_CLUSTER_TOKEN
-`--initial-cluster-state`：定义etcd集群的状态，new代表新建集群，existing代表加入现有集群，环境变量: ETCD_INITIAL_CLUSTER_STATE
-`--cert-file`：客户端服务器 TLS 证书文件的路径，环境变量: ETCD_PEER_CERT_FILE
-`--key-file`：客户端服务器 TLS key 文件的路径，环境变量: ETCD_PEER_KEY_FILE
-`--client-cert-auth`：开启客户端证书认证，环境变量: ETCD_PEER_CLIENT_CERT_AUTH
-`--trusted-ca-file`：客户端服务器 TLS 信任证书文件的路径，环境变量: ETCD_PEER_TRUSTED_CA_FILE
-`--peer-cert-file`：peer server TLS 证书文件的路径，环境变量: ETCD_PEER_CERT_FILE
-`--peer-key-file`：peer server TLS key 文件的路径，环境变量: ETCD_PEER_KEY_FILE
-`--peer-client-cert-auth`：开启 peer client 证书验证，环境变量: ETCD_PEER_CLIENT_CERT_AUTH
-`--peer-trusted-ca-file`：peer server TLS 信任证书文件路径，环境变量: ETCD_PEER_TRUSTED_CA_FILE
-
-其他参数：ssl证书相关证书
 
 ## 四、使用supervisord来启动etcd
 
-现在我们要安装supervisord，用于管理etcd服务
+现在我们要安装supervisord，用于管理etcd服务，后续的k8s相关组件，我们都用supervisord来管理
 
 ```shell
 # 安装supervisor
@@ -119,9 +96,9 @@ startretries=3
 exitcodes=0,2
 stopsignal=QUIT
 stopwaitsecs=10
-user=etcd
+user=root
 redirect_stderr=true
-stdout_logfile=/data/logs/etcd-server/etcd.stdout.log
+stdout_logfile=/data/logs/supervisor/etcd.stdout.log
 stdout_logfile_maxbytes=64MB
 stdout_logfile_backups=4
 stdout_capture_maxbytes=1MB
@@ -153,6 +130,9 @@ stdout_event_enabled=false
 更新supervisod配置文件
 
 ```shell
+# 创建supervisor日志目录
+mkdir -p /data/logs/supervisor/
+# 更新supervisod配置
 supervisorctl update
 ```
 
