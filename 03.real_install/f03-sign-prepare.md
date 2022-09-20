@@ -63,7 +63,6 @@ EOF
 ```bash
 # 生成证书请求文件
 cat > /etc/kubernetes/pki/ca-csr.json <<EOF
-EOF
 {
     "CN": "kubernetes",
     "key": {
@@ -83,9 +82,7 @@ EOF
         "expiry": "175200h"
     }
 }
-
-# 生成证书
-cfssl gencert -ca=front-proxy-ca.pem -ca-key=front-proxy-ca-key.pem -config=front-proxy-ca-config.json -profile=www front-proxy-client-csr.json | cfssljson  -bare front-proxy-client
+EOF
 ```
 
 证书根字段说明
@@ -130,6 +127,12 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 ```bash
 cp ca-config.json front-proxy-ca-config.json
 cp ca-csr.json front-proxy-ca-csr.json
+```
+
+生成聚合层CA
+
+```bash
+cfssl gencert -initca front-proxy-ca-csr.json | cfssljson -bare front-proxy-ca
 ```
 
 ### 4.2 生成front-proxy-client聚合层客户端证书
@@ -381,7 +384,7 @@ EOF
 生成证书
 
 ```bash
-cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=peer admin-csr.json | cfssljson -bare admin
+cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=www admin-csr.json | cfssljson -bare admin
 ```
 
 ## 六、同步证书
