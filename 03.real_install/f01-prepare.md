@@ -4,40 +4,51 @@
 
 ### 1.1 集群主机概述
 
-准备基础的设备如下
+准备基础的设备如下，所有的机器都是x86的64位架构
 
-|      IP       |            操作系统            |               配置               |             备注              |
-| ------------- | ------------------------------ | -------------------------------- | ----------------------------- |
-| 192.168.9.199 | Debian GNU/Linux 11 (bullseye) | 内存:12G + SSD硬盘:256G + CPU:6核 | 作为控制节点，标记为: 199-debian |
-| 192.168.9.192 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核 | 作为工作节点，标记为: 192-debian |
-| 192.168.9.160 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核 | 作为工作节点，标记为: 190-debian |
+|      IP       |            操作系统            |               配置                |        备注        |
+| ------------- | ------------------------------ | --------------------------------- | ------------------ |
+| 192.168.9.199 | Debian GNU/Linux 11 (bullseye) | 内存:12G + SSD硬盘:256G + CPU:6核 | 标记为: 199-debian |
+| 192.168.9.192 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核  | 标记为: 192-debian |
+| 192.168.9.160 | Debian GNU/Linux 11 (bullseye) | 内存:8G + SSD硬盘:256G + CPU:6核  | 标记为: 190-debian |
 
-由于199这台主机资源相对充足，所以我们使用`199-debian`资源相对充足，所以我们使用这台机充当了更多的角色
+由于`199-debian`这台主机资源相对充足，所以我们使用这台机充当了更多的角色
 
-- 192.168.9.199: etcd服务器、Proxy的L4、L7代理，同时作为运维主机：Docker的私有仓库、k8s资源配置清单仓库、提供共享存储（NFS）、签发证书、dns服务器
+- 192.168.9.199: etcd服务器、控制节点、Proxy的L4、L7代理，同时作为运维主机：签发证书服务器、dns服务器、Docker的私有仓库、k8s资源配置清单仓库、提供共享存储（NFS）
 
-- 192.168.9.192: etcd服务器、Proxy的L4、L7代理、控制节点、工作节点
+- 192.168.9.192: etcd服务器、控制节点、Proxy的L4、L7代理、工作节点
 
 - 192.168.9.192: etcd服务器、控制节点、工作节点
 
-### 1.2 k8s相关组件版本
+### 1.2 二进制组件版本
 
-|             组件              |   版本   |                                                    下载链接                                                     |
-| ----------------------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
-| kubernetes-server-linux-amd64 | v1.24.1  | <https://dl.k8s.io/v1.24.1/kubernetes-server-linux-amd64.tar.gz>                                                |
-| etcd                          | v3.5.4   | <https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz>                       |
-| docker-ce                     | 20.10.14 | <https://download.docker.com/linux/static/stable/x86_64/docker-20.10.14.tgz>                                    |
-| cni-plugins-linux-amd64       | v1.1.1   | <https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz>    |
-| containerd                    | 1.6.4    | <https://github.com/containerd/containerd/releases/download/v1.6.4/cri-containerd-cni-1.6.4-linux-amd64.tar.gz> |
-| crictl                        | v1.24.2  | <https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz>      |
+|       组件        |   版本   |                                                    下载链接                                                     |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| kubernetes-server | v1.24.1  | <https://dl.k8s.io/v1.24.1/kubernetes-server-linux-amd64.tar.gz>                                                |
+| etcd              | v3.5.4   | <https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz>                       |
+| cni-plugins       | v1.1.1   | <https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz>    |
+| crictl            | v1.24.2  | <https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz>      |
+| containerd        | 1.6.4    | <https://github.com/containerd/containerd/releases/download/v1.6.4/cri-containerd-cni-1.6.4-linux-amd64.tar.gz> |
+| docker-ce         | 20.10.14 | <https://download.docker.com/linux/static/stable/x86_64/docker-20.10.14.tgz>                                    |
+| nerdctl           | 20.10.14 | <https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-amd64.tar.gz>             |
 
-## 二、初始化域名解析服务器
+我们先把所有的安装包下载到三台服务器，得到如下文件列表
 
-### 2.1 安装域名解析服务器软件
+```bash
+kubernetes-server-linux-amd64.tar.gz
+etcd-v3.5.4-linux-amd64.tar.gz
+cri-containerd-cni-1.6.4-linux-amd64.tar.gz
+cni-plugins-linux-amd64-v1.1.1.tgz
+crictl-v1.24.2-linux-amd64.tar.gz
+nerdctl-0.20.0-linux-amd64.tar.gz
+docker-20.10.14.tgz
+```
 
-我们把 `199-debian` 这台主机作为域名服务器。接下来进行初始化操作。
+## 二、设置统一的DNS
 
-安装bind9软件
+### 2.1 安装DNS服务
+
+我们把 `199-debian` 这台主机作为域名服务器。接下来先安装bind9软件
 
 ```bash
 apt install -y bind9
@@ -63,9 +74,9 @@ dnssec-validation no;
 
 ### 2.2 配置域名解析
 
-在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。我们对集群中的相关主机设置相关的域名解析，以便能通过域名访问到我们对应的服务器。以下是具体操作过程：
+在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。集群中的所有主机都设置我们自己搭建的DNS服务，以下是具体操作过程：
 
-修改区域配置文件 `/etc/bind/named.conf.local`，我们将`k8s.com`作为后续的业务域名，添加如下正向解析区域
+修改区域配置文件 `/etc/bind/named.conf.local`，我们将`k8s.com`作为集群的业务域名，后续使用该域名访问集群的相关服务，添加如下正向解析区域
 
 ```bash
 zone "k8s.com" {
@@ -76,7 +87,7 @@ zone "k8s.com" {
 
 编辑区域数据文件`/etc/bind/k8s.com.zone`，改为如下内容
 
-```bash
+```ini
 $ORIGIN k8s.com.
 $TTL 600 ; 10 minutes
 @ IN SOA dns.k8s.com. dnsadmin.k8s.com. (
@@ -95,7 +106,7 @@ dns             A      192.168.9.199
 160-debian      A      192.168.9.160
 ```
 
-修改`/etc/bind/named.conf.options`，找到`forwarders`关键字取消注释，并设置上游dns服务器，我的局域网真实的dns是`192.168.9.253`，如下命令
+修改`/etc/bind/named.conf.options`，找到`forwarders`关键字取消该“配置块”的注释，并设置上游dns服务器，我的局域网真实的dns是`192.168.9.253`，修改位如下内容
 
 ```bash
 forwarders {
@@ -112,10 +123,9 @@ systemctl start named
 systemctl enable named
 ```
 
-验证dns是否正常
+通过查询53端口服务，判定dns服务器是否正常运行
 
 ```bash
-# 查询53端口服务
 netstat -luntp | grep 53
 ```
 
@@ -123,22 +133,16 @@ netstat -luntp | grep 53
 
 ![20220916182709](img/20220916182709.png)
 
-查看dns是否正常解析
+通过以下命令检测`199-debian`这条dns配置是否能正常解析
 
 ```bash
 dig -t A 199-debian.k8s.com @192.168.9.199 +short
 ```
 
-如果看到正常返回IP地址，则代表解析正常。
+如果看到正常返回IP地址，则代表DNS服务正常工作。这时候，修改三台主机的DNS为我们自建的DNS。在每一台主机修改 `/etc/network/interfaces` 网卡配置文件中的`dns-nameservers`项，追加自建DNS并设置在第一个，如下
 
-这时候，我们需要把我们的`199-debian`主机的DNS改为`我们自建的DNS服务`，修改 `/etc/network/interfaces` 文件的配置，如下
-
-```bash
-allow-hotplug enp1s0
-iface enp1s0 inet static
-address 192.168.9.199
-netmask 255.255.255.0
-gateway 192.168.9.254
+```ini
+# 追加自建DNS：192.168.9.199
 dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 ```
 
@@ -148,27 +152,7 @@ dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 /etc/init.d/networking restart
 ```
 
-## 三、修改所有的主机的域名解析服务器
-
-修改系统中网卡配置文件`/etc/network/interfaces`，添加`199-debian`机作为dns
-
-```bash
-dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
-```
-
-重启网络服务，我们再使用如下指令检测是否解析正常
-
-```bash
-ping 199-debian.k8s.com
-```
-
-如果返回如下图内容，这代表dns正常解析
-
-![20220916182557](img/20220916182557.png)
-
-我们在 `/etc/resolv.conf` 文件中修改只是让主机临时生效，如果重启之后，系统将会根据网卡配置来指定对应的 域名解析服务器，所以永久生效的方式应当是 修改网卡 配置中的DNS域名。
-
-`/etc/resolv.conf` 设置域名解析时，主机域名（专门用于访问主机的域名）可以使用 `search` 标注查询的主机域，但注意业务域名（用于部署项目的域名）不要使用这个配置。
+重启网络之后，要检查`/etc/resolv.conf`是否已经加上我们追加的DNS，并检查自定义的域名解析是否生效。
 
 ## 四、集群环境初始化配置
 
