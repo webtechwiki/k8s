@@ -73,7 +73,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [19.服务暴露之nodePort型service](./02.forward/f19-nodeport.md)
 - [20.服务暴露之Ingress](./02.forward/f20-ingress.md)
 
-### 3.3 第二章：在debian物理机器使用二进制安装包搭建集群
+### 3.3 第三章：在debian物理机器使用二进制安装包搭建集群
 
 - [01.k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
 - [02.安装containerd作为runtime](./03.real_install/f02-install_containerd.md)

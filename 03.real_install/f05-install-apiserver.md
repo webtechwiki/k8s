@@ -1,97 +1,31 @@
 # 安装控制节点的apiserver
 
-搭建好etcd数据库集群之后，我们就可以安装apiserver组件了，在撰写这篇文档的时候，我们选择`1.15.2`的k8s版本，在所有主机上安装apiserver，以下是具体的安装过程
+搭建好etcd数据库集群之后，我们就可以安装apiserver组件了，在所有主机上安装apiserver，以下是具体的安装过程。
 
-## 一、签发ssl证书
+## 一、创建kubelet授权用户
 
-我们先登录上`199-debian`主机，去签发ssl证书，用于k8s集群与etcd数据库的通信使用。
+因为后面要配置kubelet的bootstrap认证，即kubelet启动时自动创建CSR请求，这里需要在apiserver上开启token的认证。所以先在master上生成一个随机值作为token。下面在一台主机操作即可
 
 ```shell
 # 创建证书目录
-mkdir -p /opt/certs/kubernetes
-# 进入证书目录
-cd /opt/certs/kubernetes
+openssl rand -hex 10
 ```
 
-### 1.1 创建客户端证书
+假设生成的token为`88c916f382dc619a6bca`，把这个token写入到一个文件里，这里写入到 `/etc/kubernetes/bb.csv`，如下
 
-创建用于证书签名请求文件（csr）的json配置文件`client-csr.json`，写入如下内容
-
-```json
-{
-    "CN": "k8s-node",
-    "hosts": [
-    ],
-    "key": {
-        "algo": "rsa",
-        "size": 2048
-    },
-    "names": [{
-        "C": "CN",
-        "ST": "Guangdong",
-        "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "ops"
-    }]
-}
+```bash
+cat > /etc/kubernetes/bb.csv <<EOF
+6440328e1b3a1f4873dc,kubelet-bootstrap,10001,"system:node-bootstrapper"
+EOF
 ```
 
-生成证书命令如下
-
-```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=client client-csr.json | cfssljson -bare client
-```
-
-执行命令后将会产生三个文件，分别是`client.csr`,`client-key.pem`,`client.pem`，生成的证书用于连接etcd服务通信，apiserver当作ectd的客户端。
-
-### 1.2 创建服务器证书
-
-接下来，我们还要为apiserver创建ssl证书，创建`apiserver-csr.json`文件，添加以下内容
-
-```json
-{
-    "CN": "apiserver",
-    "hosts": [
-        "192.168.0.1",
-        "kubernetes.default",
-        "kubernetes.default.svc",
-        "kubernetes.default.svc.cluster",
-        "kubernetes.default.svc.cluster.local",
-        "192.168.9.199",
-        "192.168.9.192",
-        "192.168.9.160"
-    ],
-    "key": {
-        "algo": "rsa",
-        "size": 2048
-    },
-    "names": [{
-        "C": "CN",
-        "ST": "Guangdong",
-        "L": "Guangzhou",
-        "O": "k8s",
-        "OU": "ops"
-    }]
-}
-```
-
-我们把可能添加到集群的主机IP都加到了`hosts`节点，再使用以下命令创建ssl证书
-
-```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server apiserver-csr.json | cfssljson -bare apiserver
-```
-
-执行命令之后生成三个文件，分别是`apiserver.csr`、`apiserver-key.pem`、`apiserver.pem`，我们将在启动apiserver服务的时候将加载证书
-
-> 注意：实际上，我们用的证书信息文件和上篇文章etcd本身的证书信息文件是一样的。只是在部署etcd中我们生成的证书是端对端的证书，而在在本文中生成了另外两套证书。其中k8s作为ectd客户端的时候使用的客户端证书，另外是k8s作为服务器的时候使用的服务器证书。
+这里第二列定义了一个用户名kubelet-bootstrap，后面在配置kubelet时会为此用户授权。
 
 ## 二、安装apiserver
 
 在三台主机上，执行安装操作
 
 ```shell
-# 下载指定的服务器二进制包
-wget https://dl.k8s.io/v1.24.1/kubernetes-server-linux-amd64.tar.gz
 # 解压安装包
 tar -zxvf kubernetes-server-linux-amd64.tar.gz
 # 将安装包移到/opt目录下并根据版本重命名
@@ -111,47 +45,56 @@ rm kubernetes-src.tar.gz
 rm -rf server/bin/*.tar
 ```
 
-## 三、启动apiser服务器
+## 三、启动apiser服务
+
+### 3.1 创建启动脚本
 
 在apiserver二进制文件目录创建`/opt/kubernetes/server/bin/kube-apiserver.sh`启动脚本文件，写入以下内容
 
-```shell
+```bash
 #!/bin/bash
 ./kube-apiserver \
     --v=2 \
-    --allow-privileged=true  \
-    --service-account-issuer=https://kubernetes.default.svc.cluster.local \
-    --authorization-mode=Node,RBAC \
-    --bind-address=0.0.0.0 \
-    --secure-port=6443  \
-    --advertise-address=192.168.9.199 \
-    --client-ca-file=/opt/certs/ca.pem \
-    --requestheader-client-ca-file=/opt/certs/ca.pem \
-    --proxy-client-cert-file=/opt/certs/apiserver/apiserver-front-proxy-client.pem  \
-    --proxy-client-key-file=/opt/certs/apiserver/apiserver-front-proxy-client-key.pem  \
-    --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname  \
-    --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota  \
-    --etcd-cafile=/opt/certs/ca.pem \
-    --etcd-certfile=/opt/certs/apiserver/apiserver.pem \
-    --etcd-keyfile=/opt/certs/apiserver/apiserver-key.pem \
-    --etcd-servers=https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379 \
-    --service-account-key-file=/opt/certs/sa.pub \
-    --service-account-signing-key-file=/opt/certs/sa.key \
-    --service-cluster-ip-range=10.96.0.0/12 \
-    --service-node-port-range=30000-32767 \
-    --enable-bootstrap-token-auth=true  \
-    --kubelet-client-certificate=/opt/certs/apiserver/apiserver.pem \
-    --kubelet-client-key=/opt/certs/apiserver/apiserver-key.pem \
-    --tls-cert-file=/opt/certs/apiserver/apiserver.pem \
-    --tls-private-key-file=/opt/certs/apiserver/apiserver-key.pem \
-    --requestheader-allowed-names=aggregator  \
-    --requestheader-group-headers=X-Remote-Group  \
-    --requestheader-extra-headers-prefix=X-Remote-Extra-  \
-    --requestheader-username-headers=X-Remote-User \
-    --enable-aggregator-routing=true
+    --logtostderr=true \
+    --allow-privileged=true \
+    --bind-address="192.168.9.199" \
+    --secure-port="6443" \
+    --token-auth-file="/etc/kubernetes/bb.csv " \
+    --advertise-address="192.168.26.71" \
+    --service-cluster-ip-range="10.96.0.0/16" \
+    --service-node-port-range="30000-60000" \
+    --etcd-servers="https://192.168.26.71:2379" \
+    --etcd-cafile="/etc/kubernetes/pki/ca.pem" \
+    --etcd-certfile="/etc/kubernetes/pki/etcd.pem" \
+    --etcd-keyfile="/etc/kubernetes/pki/etcd-key.pem" \
+    --client-ca-file="/etc/kubernetes/pki/ca.pem" \
+    --tls-cert-file="/etc/kubernetes/pki/apiserver.pem" \
+    --tls-private-key-file="/etc/kubernetes/pki/apiserver-key.pem" \
+    --kubelet-client-certificate="/etc/kubernetes/pki/apiserver.pem" \
+    --kubelet-client-key="/etc/kubernetes/pki/apiserver-key.pem" \
+    --service-account-key-file="/etc/kubernetes/pki/ca-key.pem" \
+    --service-account-signing-key-file="/etc/kubernetes/pki/ca-key.pem" \
+    --service-account-issuer="https://kubernetes.default.svc.cluster.local" \
+    --kubelet-preferred-address-types="InternalIP,ExternalIP,Hostname" \
+    --enable-admission-plugins="NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota" \
+    --authorization-mode="Node,RBAC" \
+    --enable-bootstrap-token-auth=true
+    #--requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.pem  \
+    #--proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.pem  \
+    #--proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client-key.pem  \
+    #--requestheader-allowed-names=aggregator  \
+    #--requestheader-group-headers=X-Remote-Group  \
+    #--requestheader-extra-headers-prefix=X-Remote-Extra-  \
+    #--requestheader-username-headers=X-Remote-User
 ```
 
-参数说明
+赋予执行权限
+
+```shell
+chmod +x /opt/kubernetes/server/bin/kube-apiserver.sh
+```
+
+上面注释的部分是配置聚合层的，本环境里没有启用聚合层所以这些选项被注释了，如果配置了聚合层的话，则需要把#取消。相关参数说明
 
 `--audit-log-path`：api请求的日志文件目录
 `--audit-policy-file`：定义审核策略配置的文件的路径
@@ -185,17 +128,7 @@ rm -rf server/bin/*.tar
 
 以上是我们在启动apiserver的时候常用的参数，apiserver具有很多参数，很多参数也有默认值，可以`./kube-apiserver --hep`命令查看更多的帮助。
 
-赋予启动简直执行权限
-
-```shell
-chmod +x kube-apiserver.sh
-```
-
-创建日志目录
-
-```shell
-mkdir -p /data/logs/kubernetes/kube-apiserver
-```
+### 3.2 使用supervisor运行
 
 创建supervisor进程配置文件`/etc/supervisor/conf.d/kube-apiserver.conf`
 
