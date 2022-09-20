@@ -154,12 +154,16 @@ dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 
 重启网络之后，要检查`/etc/resolv.conf`是否已经加上我们追加的DNS，并检查自定义的域名解析是否生效。
 
-## 四、集群环境初始化配置
+## 三、机器初始化配置
 
-### 4.1 安装ipvsadm
+### 3.1 安装ipvsadm
+
+在所有主机上操作
 
 ```bash
+# 安装
 apt install ipvsadm ipset sysstat conntrack -y
+# 写入配置
 cat >> /etc/modules-load.d/ipvs.conf <<EOF 
 ip_vs
 ip_vs_rr
@@ -174,7 +178,7 @@ ipt_rpfilter
 ipt_REJECT
 ipip
 EOF
-
+# 重新加载系统模块
 systemctl restart systemd-modules-load.service
 ```
 
@@ -200,41 +204,48 @@ nfnetlink              20480  5 nft_compat,nf_conntrack_netlink,nf_tables,ip_set
 libcrc32c              16384  5 nf_conntrack,nf_nat,nf_tables,raid456,ip_v
 ```
 
-### 4.2 修改内核参数
+### 3.2 修改内核参数
+
+在所有主机上操作
 
 ```bash
+# 写入内核配置文件
 cat <<EOF > /etc/sysctl.d/k8s.conf
-net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
-fs.may_detach_mounts = 1
-vm.overcommit_memory=1
-vm.panic_on_oom=0
-fs.inotify.max_user_watches=89100
-fs.file-max=52706963
-fs.nr_open=52706963
-net.netfilter.nf_conntrack_max=2310720
-
-
-net.ipv4.tcp_keepalive_time = 600
-net.ipv4.tcp_keepalive_probes = 3
-net.ipv4.tcp_keepalive_intvl =15
-net.ipv4.tcp_max_tw_buckets = 36000
-net.ipv4.tcp_tw_reuse = 1
-net.ipv4.tcp_max_orphans = 327680
-net.ipv4.tcp_orphan_retries = 3
-net.ipv4.tcp_syncookies = 1
-net.ipv4.tcp_max_syn_backlog = 16384
-net.ipv4.ip_conntrack_max = 65536
-net.ipv4.tcp_max_syn_backlog = 16384
-net.ipv4.tcp_timestamps = 0
-net.core.somaxconn = 16384
-
-net.ipv6.conf.all.disable_ipv6 = 0
-net.ipv6.conf.default.disable_ipv6 = 0
-net.ipv6.conf.lo.disable_ipv6 = 0
-net.ipv6.conf.all.forwarding = 0
-
+net.ipv4.ip_forward = 1
 EOF
 
-sysctl --system
+# 让配置立即生效
+sysctl -p /etc/sysctl.d/k8s.conf
+```
+
+### 3.3 设置主机名
+
+`199-debian`设置主机名如下命令
+
+```bash
+hostnamectl set-hostname 199-debian
+```
+
+`192-debian`设置主机名如下命令
+
+```bash
+hostnamectl set-hostname 192-debian
+```
+
+`160-debian`设置主机名如下命令
+
+```bash
+hostnamectl set-hostname 160-debian
+```
+
+所有主机追加静态解析，如下
+
+```bash
+cat >> /etc/hosts <<EOF
+192.168.9.199   199-debian
+192.168.9.192   192-debian
+192.168.9.160   160-debian
+EOF
 ```
