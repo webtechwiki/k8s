@@ -352,34 +352,39 @@ cfssl gencert -ca=/opt/certs/ca.pem -ca-key=/opt/certs/ca-key.pem -config=/opt/c
 
 ## 1. 签发证书
 
-kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机，下面将为`kubelet`创建ssl证书
+kubectl作为客户端同时作为服务器，我们登录到每一台主机，创建一个证书，下面将为`kubelet`创建ssl证书，先创建证书目录
 
+```bash
+mkdir /opt/certs/kubelet
+```
 
 创建证书信息文件`/opt/certs/kubelet/kubelet-scr.json`文件，添加以下内容
 
 ```json
 {
-    "CN": "k8s-kubelet",
-    "hosts": [
-        "127.0.0.1",
-        "192.168.14.10",
-        "192.168.14.11",
-        "192.168.14.12",
-        "192.168.14.21",
-        "192.168.14.22",
-        "192.168.14.200"
-    ],
+    "CN": "system:node:debian",
     "key": {
         "algo": "rsa",
         "size": 2048
     },
+    "hosts": [
+        "192.168.0.1",
+        "kubernetes.default",
+        "kubernetes.default.svc",
+        "kubernetes.default.svc.cluster",
+        "kubernetes.default.svc.cluster.local",
+        "192.168.9.199",
+        "192.168.9.192",
+        "192.168.9.160",
+        "192.168.9.190"
+    ],
     "name": [
         {
             "C": "CN",
             "ST": "Guangdong",
             "L": "Guangzhou",
-            "O": "od",
-            "OU": "ops"
+            "O": "system:nodes",
+            "OU": "Kubernetes-manual"
         }
     ]
 }
@@ -388,7 +393,7 @@ kubectl作为客户端同时作为服务器，我们登录到`kb200`这台主机
 使用以下命令创建证书
 
 ```shell
-cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=server kubelet-scr.json | cfssljson -bare kubelet
+cfssl gencert -ca=../ca.pem -ca-key=../ca-key.pem -config=../ca-config.json -profile=peer kubelet-scr.json | cfssljson -bare kubelet
 ```
 
 ### 3.8 kube-proxy

@@ -110,8 +110,7 @@ kubectl config set-cluster kubernetes \
 --kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
 
 kubectl config set-credentials tls-bootstrap-token-user \
---token=c8ad9c.2e4d610cf3e7426e \
---kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
+--token=c8ad9c.2e4d610cf3e7426e 
 
 kubectl config set-context tls-bootstrap-token-user@kubernetes \
 --cluster=kubernetes \
@@ -126,43 +125,101 @@ kubectl config use-context tls-bootstrap-token-user@kubernetes \
 
 接下来在`192-debian`和`160-debian`上启动kubelet，在让kubelet启动之前，我们需要有一个基础的pause镜像，以下是拉取命令，该镜像负责其k8s集群中pod启动之前的初始化操作
 
-```shell
-docker pull kubernetes/pause
-```
-
-
 创建kubelet的启动脚本文件`/opt/kubernetes/server/bin/kubelet.sh`文件，添加以下内容
 
 ```shell
 #!/bin/bash
 ./kubelet \
-  --anonymous-auth=false \
-  --cgroup-driver systemd \
-  --cluster-dns 192.168.0.2 \
-  --node-ip 192.168.14.21 \
-  --cluster-domain cluster.local \
-  --runtime-cgroups=/systemd/system.slice \
-  --kubelet-cgroups=/systemd/system.slice \
-  --fail-swap-on="false" \
-  --client-ca-file ./certs/ca.pem \
-  --tls-cert-file ./certs/kubelet.pem \
-  --tls-private-key-file ./certs/kubelet-key.pem \
-  --hostname-override kb21 \
-  --image-gc-high-threshold 20 \
-  --image-gc-low-threshold 10 \
-  --kubeconfig ./conf/kubelet.kubeconfig \
-  --log-dir /data/logs/kubenetes/kube-kubelet \
-  --pod-infra-container-image kubernetes/pause:latest \
-  --root-dir /data/kubelet
+    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig  \
+    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+    --config=/etc/kubernetes/kubelet-conf.yml \
+    --container-runtime=remote  \
+    --runtime-request-timeout=15m  \
+    --container-runtime-endpoint=unix:///run/containerd/containerd.sock  \
+    --cgroup-driver=systemd 
 ```
 
+创建配置文件
 
+```bash
+cat > /etc/kubernetes/kubelet-conf.yml <<EOF
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+address: 0.0.0.0
+port: 10250
+readOnlyPort: 10255
+authentication:
+  anonymous:
+    enabled: false
+  webhook:
+    cacheTTL: 2m0s
+    enabled: true
+  x509:
+    clientCAFile: /opt/certs/ca.pem
+authorization:
+  mode: Webhook
+  webhook:
+    cacheAuthorizedTTL: 5m0s
+    cacheUnauthorizedTTL: 30s
+cgroupDriver: systemd
+cgroupsPerQOS: true
+clusterDNS:
+- 192.168.0.2
+clusterDomain: cluster.local
+containerLogMaxFiles: 5
+containerLogMaxSize: 10Mi
+contentType: application/vnd.kubernetes.protobuf
+cpuCFSQuota: true
+cpuManagerPolicy: none
+cpuManagerReconcilePeriod: 10s
+enableControllerAttachDetach: true
+enableDebuggingHandlers: true
+enforceNodeAllocatable:
+- pods
+eventBurst: 10
+eventRecordQPS: 5
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 100Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+evictionPressureTransitionPeriod: 5m0s
+failSwapOn: true
+fileCheckFrequency: 20s
+hairpinMode: promiscuous-bridge
+healthzBindAddress: 127.0.0.1
+healthzPort: 10248
+httpCheckFrequency: 20s
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
+imageMinimumGCAge: 2m0s
+iptablesDropBit: 15
+iptablesMasqueradeBit: 14
+kubeAPIBurst: 10
+kubeAPIQPS: 5
+makeIPTablesUtilChains: true
+maxOpenFiles: 1000000
+maxPods: 110
+nodeStatusUpdateFrequency: 10s
+oomScoreAdj: -999
+podPidsLimit: -1
+registryBurst: 10
+registryPullQPS: 5
+resolvConf: /etc/resolv.conf
+rotateCertificates: true
+runtimeRequestTimeout: 2m0s
+serializeImagePulls: true
+streamingConnectionIdleTimeout: 4h0m0s
+syncFrequency: 1m0s
+volumeStatsAggPeriod: 1m0s
+EOF
+```
 
 添加可执行权限
+
 ```shell
 chmod +x kubelet.sh
 ```
-
 
 参数说明：
 
@@ -190,22 +247,19 @@ chmod +x kubelet.sh
 
 `pod-infra-container-image`: 基础的pause镜像
 
-
-
 创建数据目录和日志目录
 
 ```shell
-# 创建日志目录
-mkdir -p /data/logs/kubernetes/kube-kubelet
+# 创建kubelet所需要的目录
+mkdir -p /data/logs/kubernetes/kube-kubelet /var/lib/kubelet /var/log/kubernetes /etc/kubernetes/manifests/
 # 创建数据目录
 mkdir -p /data/kubelet
 ```
 
+创建supervisor进程配置文件`/etc/supervisor/conf.d/kube-kubelet.conf`文件，添加以下内容
 
-创建supervisor进程配置文件`/etc/supervisord.d/kube-kubelet.ini`文件，添加以下内容
-
-```shell
-[program:kube-kubelet-21]
+```ini
+[program:kube-kubelet-199]
 directory=/opt/kubernetes/server/bin
 command=/opt/kubernetes/server/bin/kubelet.sh
 numprocs=1
@@ -231,20 +285,17 @@ stdout_event_enabled=false
 chmod +x kubelet.sh
 ```
 
-
 更新supervisord，如下命令
 
 ```shell-script
 supervisorctl update
 ```
 
-
 此时，服务已经正常运行了，可以使用以下命令查看节点信息
 
 ```shell
 kubectl get nodes
 ```
-
 
 如果看到以下信息，代表安装成功
 
@@ -265,10 +316,3 @@ kubectl label node kb22 node-role.kubernetes.io/master=
 kubectl label node kb21 node-role.kubernetes.io/node=
 kubectl label node kb22 node-role.kubernetes.io/node=
 ```
-
-
-
-
-
-
-
