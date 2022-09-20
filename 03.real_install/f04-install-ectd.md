@@ -6,17 +6,17 @@
 
 常见参数说明说下
 
-|             参数              |           对应环境变量           |                                                                                                                                                                             说明                                                                                                                                                                              |
-| ----------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| --name                        | ETCD_NAME                        | 当前etcd的唯一名称，要保证和其他节点不冲突                                                                                                                                                                                                                                                                                                                    |
-| --data-dir                    | ETCD_DATA_DIR                    | 指定etcd存储数据的存储位置                                                                                                                                                                                                                                                                                                                                    |
-| --listen-peer-urls            | ETCD_LISTEN_PEER_URLS            | 端对端的通信url，包含主机地址和端口号，指定当前etcd和其他节点etcd通信时的服务地址和端口。假如etcd集群中包含三个etcd服务，那么三个etcd节点构成了一个高可用集群，etcd集群会自动选举一个节点作为主节点，另外两个节点作为从节点。所有的写入操作将往主节点写，所有的读操作在从节点上读，这是etcd读写的过程。上述设置的2380端口，用来监听其他etcd节点发送过来的数据 |
-| --listen-client-urls          | ETCD_LISTEN_CLIENT_URLS          | 指定当前etcd接收客户端指令的地址和端口，在这里的客户端我们指的是k8s集群的master节点                                                                                                                                                                                                                                                                           |
-| --initial-advertise-peer-urls | ETCD_INITIAL_ADVERTISE_PEER_URLS | 指定etcd广播端口，当前etcd会将数据同步到其他节点，通过2380端口发送                                                                                                                                                                                                                                                                                            |
-| --advertise-client-urls       | ETCD_ADVERTISE_CLIENT_URLS       | 给客户端通告的端口                                                                                                                                                                                                                                                                                                                                            |
-| --initial-cluster             | ETCD_INITIAL_CLUSTER             | 定义etcd集群中所有节点的名称和IP，以及通信端口                                                                                                                                                                                                                                                                                                                |
-| --initial-cluster-token       | ETCD_INITIAL_CLUSTER_TOKEN       | 定义etcd中的token，所有节点的token必须保持一致                                                                                                                                                                                                                                                                                                                |
-| --initial-cluster-state       | ETCD_INITIAL_CLUSTER_STATE       | 定义etcd集群的状态，new代表新建集群，existing代表加入现有集群                                                                                                                                                                                                                                                                                                 |
+|             参数              |           对应环境变量           |                                           说明                                            |
+| ----------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
+| --name                        | ETCD_NAME                        | 当前etcd的唯一名称，要保证和其他节点不冲突                                                |
+| --data-dir                    | ETCD_DATA_DIR                    | 指定etcd存储数据的存储位置                                                                |
+| --listen-peer-urls            | ETCD_LISTEN_PEER_URLS            | 端对端的通信url，包含主机地址和端口号，指定当前etcd和其他节点etcd通信时的服务地址和端口。 |
+| --listen-client-urls          | ETCD_LISTEN_CLIENT_URLS          | 指定当前etcd接收客户端指令的地址和端口，在这里的客户端我们指的是k8s集群的master节点       |
+| --initial-advertise-peer-urls | ETCD_INITIAL_ADVERTISE_PEER_URLS | 指定etcd广播端口，当前etcd会将数据同步到其他节点，通过2380端口发送                        |
+| --advertise-client-urls       | ETCD_ADVERTISE_CLIENT_URLS       | 给客户端通告的端口                                                                        |
+| --initial-cluster             | ETCD_INITIAL_CLUSTER             | 定义etcd集群中所有节点的名称和IP，以及通信端口                                            |
+| --initial-cluster-token       | ETCD_INITIAL_CLUSTER_TOKEN       | 定义etcd中的token，所有节点的token必须保持一致                                            |
+| --initial-cluster-state       | ETCD_INITIAL_CLUSTER_STATE       | 定义etcd集群的状态，new代表新建集群，existing代表加入现有集群                             |
 
 ## 二、安装
 
@@ -181,7 +181,7 @@ etcdctl --cacert="/etc/kubernetes/pki/ca.pem" --cert="/etc/kubernetes/pki/etcd.p
 为了验证etcd集群是否正常工作，我们还可以现在`199-debian`设置一个值，如下
 
 ```bash
-etcdctl set name lixiaoming
+etcdctl put name lixiaoming123
 ```
 
 再通过`192-debian`和`160-debian`去读取值，如果正常取到，代表etcd集群正常工作，如下命令
