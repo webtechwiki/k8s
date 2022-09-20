@@ -104,21 +104,15 @@ kubectl create -f bootstrap.secret.yaml
 ## 二、创建kubelet用户
 
 ```bash
-kubectl config set-cluster kubernetes \
---certificate-authority=/opt/certs/ca.pem \
---embed-certs=true     --server=https://192.168.9.190:7443 \
---kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
+cd /etc/kubernetes/pki/
 
-kubectl config set-credentials tls-bootstrap-token-user \
---token=c8ad9c.2e4d610cf3e7426e 
+kubectl config set-cluster kubernetes --certificate-authority=ca.pem --embed-certs=true --server=https://192.168.9.199:6443 --kubeconfig=kubelet-bootstrap.conf 
 
-kubectl config set-context tls-bootstrap-token-user@kubernetes \
---cluster=kubernetes \
---user=tls-bootstrap-token-user \
---kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
+kubectl config set-credentials kubelet-bootstrap --token=6440328e1b3a1f4873dc --kubeconfig=kubelet-bootstrap.conf 
 
-kubectl config use-context tls-bootstrap-token-user@kubernetes \
---kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
+kubectl config set-context kubernetes --cluster=kubernetes --user=kubelet-bootstrap --kubeconfig=kubelet-bootstrap.conf 
+
+kubectl config use-context kubernetes --kubeconfig=kubelet-bootstrap.conf
 ```
 
 ## 三、配置kubelet启动脚本
@@ -130,88 +124,53 @@ kubectl config use-context tls-bootstrap-token-user@kubernetes \
 ```shell
 #!/bin/bash
 ./kubelet \
-    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig  \
+    --bootstrap-kubeconfig=/etc/kubernetes/kubelet-bootstrap.conf  \
+    --cert-dir=/var/lib/kubelet/pki \
+    --hostname-override=vms71.rhce.cc \
     --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
-    --config=/etc/kubernetes/kubelet-conf.yml \
-    --container-runtime=remote  \
-    --runtime-request-timeout=15m  \
-    --container-runtime-endpoint=unix:///run/containerd/containerd.sock  \
-    --cgroup-driver=systemd 
+    --config=/etc/kubernetes/kubelet-config.yaml \
+    --pod-infra-container-image=registry.aliyuncs.com/google_containers/pause:3.7 \
+    --container-runtime=remote \
+    --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \
+    --runtime-request-timeout=15m \
+    --alsologtostderr=true \
+    --logtostderr=false \
+    --log-dir=/var/log/kubernetes \
+    --v=2
 ```
 
 创建配置文件
 
 ```bash
-cat > /etc/kubernetes/kubelet-conf.yml <<EOF
+cat > /etc/kubernetes/kubelet-config.yaml <<EOF
 apiVersion: kubelet.config.k8s.io/v1beta1
-kind: KubeletConfiguration
 address: 0.0.0.0
-port: 10250
+port: 10250 
 readOnlyPort: 10255
 authentication:
   anonymous:
     enabled: false
   webhook:
-    cacheTTL: 2m0s
+    cacheTTL: 0s
     enabled: true
   x509:
-    clientCAFile: /opt/certs/ca.pem
+    clientCAFile: /etc/kubernetes/pki/ca.pem
 authorization:
   mode: Webhook
   webhook:
-    cacheAuthorizedTTL: 5m0s
-    cacheUnauthorizedTTL: 30s
+    cacheAuthorizedTTL: 0s
+    cacheUnauthorizedTTL: 0s
 cgroupDriver: systemd
-cgroupsPerQOS: true
 clusterDNS:
-- 192.168.0.2
+- 192.068.0.2
 clusterDomain: cluster.local
-containerLogMaxFiles: 5
-containerLogMaxSize: 10Mi
-contentType: application/vnd.kubernetes.protobuf
-cpuCFSQuota: true
-cpuManagerPolicy: none
-cpuManagerReconcilePeriod: 10s
-enableControllerAttachDetach: true
-enableDebuggingHandlers: true
-enforceNodeAllocatable:
-- pods
-eventBurst: 10
-eventRecordQPS: 5
-evictionHard:
-  imagefs.available: 15%
-  memory.available: 100Mi
-  nodefs.available: 10%
-  nodefs.inodesFree: 5%
-evictionPressureTransitionPeriod: 5m0s
-failSwapOn: true
-fileCheckFrequency: 20s
-hairpinMode: promiscuous-bridge
+cpuManagerReconcilePeriod: 0s
+evictionPressureTransitionPeriod: 0s
+fileCheckFrequency: 0s
 healthzBindAddress: 127.0.0.1
-healthzPort: 10248
-httpCheckFrequency: 20s
-imageGCHighThresholdPercent: 85
-imageGCLowThresholdPercent: 80
-imageMinimumGCAge: 2m0s
-iptablesDropBit: 15
-iptablesMasqueradeBit: 14
-kubeAPIBurst: 10
-kubeAPIQPS: 5
-makeIPTablesUtilChains: true
-maxOpenFiles: 1000000
-maxPods: 110
-nodeStatusUpdateFrequency: 10s
-oomScoreAdj: -999
-podPidsLimit: -1
-registryBurst: 10
-registryPullQPS: 5
-resolvConf: /etc/resolv.conf
-rotateCertificates: true
-runtimeRequestTimeout: 2m0s
-serializeImagePulls: true
-streamingConnectionIdleTimeout: 4h0m0s
-syncFrequency: 1m0s
-volumeStatsAggPeriod: 1m0s
+httpCheckFrequency: 0s
+imageMinimumGCAge: 0s
+kind: KubeletConfiguration
 EOF
 ```
 
