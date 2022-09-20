@@ -163,7 +163,7 @@ ln -s /opt/etcd/etcdctl /usr/local/bin/etcdctl
 我们在任意节点使用etcdctl命令检查集群状态，需要注意的是，要确切指定证书的位置
 
 ```shell
-etcdctl --cacert="/opt/certs/ca.pem" --cert="/opt/certs/etcd/etcd-peer.pem" --key="/opt/certs/etcd/etcd-peer-key.pem" --endpoints="https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379" endpoint status --write-out=table
+etcdctl --cacert="/etc/kubernetes/pki/ca.pem" --cert="/etc/kubernetes/pki/etcd.pem" --key="/etc/kubernetes/pki/etcd-key.pem" --endpoints="https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379" endpoint status --write-out=table
 ```
 
 如果看到如下输出，代表 ectd 集群搭建成功
