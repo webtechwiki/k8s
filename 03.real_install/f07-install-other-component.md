@@ -10,35 +10,33 @@ ln -s /opt/kubernetes/server/bin/kubectl /usr/local/bin/kubectl
 
 ## 二、安装controller-manager
 
-初始化配置
+### 2.1 创建配置
+
+controller-manager和apiserver之间的认证是通过kubeconfig的方式来认证的，即controller-manager的私钥、公钥及CA的证书要放在一个kubeconfig文件里。下面创建controller-manager所用的kubeconfig文件kube-controller-manager.kubeconfig，现在在/etc/kubernetes/pki里创建，然后剪切到/etc/kubernetes里。
 
 ```bash
-# 设置一个集群项
-kubectl config set-cluster kubernetes \
-     --certificate-authority=/opt/certs/ca.pem \
-     --embed-certs=true \
-     --server=https://192.168.9.190:7443 \
-     --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
+# 进入证书目录
+cd /etc/kubernetes/pki/
 
-# 设置一个环境项，一个上下文
-kubectl config set-context system:kube-controller-manager@kubernetes \
-    --cluster=kubernetes \
-    --user=system:kube-controller-manager \
-    --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
+# 设置集群信息
+kubectl config set-cluster kubernetes --certificate-authority=ca.pem --embed-certs=true --server=https://192.168.9.190:7443 --kubeconfig=kube-controller-manager.kubeconfig
 
-# 设置一个用户项
-kubectl config set-credentials system:kube-controller-manager \
-     --client-certificate=/opt/certs/controller-manager/controller-manager.pem \
-     --client-key=/opt/certs/controller-manager/controller-manager-key.pem \
-     --embed-certs=true \
-     --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
+# 设置用户信息，这里用户名是system:kube-controller-manager ，也就是前面controller-manager-csr.json里CN指定的。
+kubectl config set-credentials system:kube-controller-manager --client-certificate=controller-manager.pem --client-key=controller-manager-key.pem --embed-certs=true --kubeconfig=kube-controller-manager.kubeconfig
 
-# 设置默认环境
-kubectl config use-context system:kube-controller-manager@kubernetes \
-     --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig
+# 设置上下文信息
+kubectl config set-context system:kube-controller-manager --cluster=kubernetes --user=system:kube-controller-manager --kubeconfig=kube-controller-manager.kubeconfig
+
+# 设置默认的上下文
+kubectl config use-context system:kube-controller-manager --kubeconfig=kube-controller-manager.kubeconfig
+
+# 将生成的证书移到/etc/kubernetes/
+mv kube-controller-manager.kubeconfig /etc/kubernetes/
 ```
 
-`/etc/kubernetes/controller-manager.kubeconfig`配置文件只需生成一次，再传到其他主机即可。
+`/etc/kubernetes/kube-controller-manager.kubeconfig`配置文件只需生成一次，再传到其他主机即可。
+
+### 2.1 创建启动脚本
 
 创建文件`/opt/kubernetes/server/bin/kube-controller-manager.sh`，添加以下内容
 
@@ -48,11 +46,11 @@ kubectl config use-context system:kube-controller-manager@kubernetes \
     --v=2 \
     --logtostderr=true \
     --bind-address=127.0.0.1 \
-    --root-ca-file=/opt/certs/ca.pem \
-    --cluster-signing-cert-file=/opt/certs/ca.pem \
-    --cluster-signing-key-file=/opt/certs/ca-key.pem \
-    --service-account-private-key-file=/opt/certs/sa.key \
-    --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
+    --root-ca-file=/etc/kubernetes/pki/ca.pem \
+    --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
+    --cluster-signing-key-file=/etc/kubernetes/pki/ca-key.pem \
+    --service-account-private-key-file=/etc/kubernetes/pki/ca-key.pem \
+    --kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
     --leader-elect=true \
     --use-service-account-credentials=true \
     --node-monitor-grace-period=40s \
@@ -60,21 +58,15 @@ kubectl config use-context system:kube-controller-manager@kubernetes \
     --pod-eviction-timeout=2m0s \
     --controllers=*,bootstrapsigner,tokencleaner \
     --allocate-node-cidrs=true \
-    --feature-gates=IPv6DualStack=true \
-    --service-cluster-ip-range=10.96.0.0/12 \
-    --cluster-cidr=172.16.0.0/12,fc00::/48 \
-    --node-cidr-mask-size-ipv4=24 \
-    --node-cidr-mask-size-ipv6=64 \
-    --requestheader-client-ca-file=/opt/certs/ca.pem
+    --cluster-cidr=10.244.0.0/16 \
+    --node-cidr-mask-size=24
 ```
 
 添加执行权限与创建日志目录
 
 ```shell
 # 添加可执行权限
-chmod +x kube-controller-manager.sh
-# 创建日志目录
-mkdir -p /data/logs/kubernetes/kube-controller-manager
+chmod +x /opt/kubernetes/server/bin/kube-controller-manager.sh
 ```
 
 创建supervisor脚本启动管理文件`/etc/supervisor/conf.d/kube-controller-manager.conf`，添加以下内容
@@ -93,7 +85,7 @@ stopsignal=QUIT
 stopwaitsecs=10
 user=root
 redirect_stderr=true
-stdout_logfile=/data/logs/kubernetes/kube-controller-manager/controller.stdout.log
+stdout_logfile=/data/logs/supervisor/controller.stdout.log
 stdout_logfile_maxbytes=64MB
 stdout_logfile_backups=4
 stdout_capture_maxbytes=1MB
@@ -108,35 +100,30 @@ supervisorctl update
 
 ## 三、部署scheduler
 
-创建配置
+### 3.1 创建配置
+
+controller-manager和apiserver之间的认证是通过kubeconfig的方式来认证的，即controller-manager的私钥、公钥及CA的证书要放在一个kubeconfig文件里。下面创建controller-manager所用的kubeconfig文件kube-controller-manager.kubeconfig，现在在/etc/kubernetes/pki里创建，然后剪切到/etc/kubernetes里。
 
 ```bash
-# 设置一个集群项
-kubectl config set-cluster kubernetes \
-     --certificate-authority=/opt/certs/ca.pem \
-     --embed-certs=true \
-     --server=https://192.168.9.190:7443 \
-     --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
+# 设置集群信息
+kubectl config set-cluster kubernetes --certificate-authority=ca.pem --embed-certs=true --server=https://192.168.9.190:7443 --kubeconfig=kube-scheduler.kubeconfig
 
-# 设置一个环境项，一个上下文
-kubectl config set-credentials system:kube-scheduler \
-     --client-certificate=/opt/certs/scheduler/scheduler.pem \
-     --client-key=/opt/certs/scheduler/scheduler-key.pem \
-     --embed-certs=true \
-     --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
+# 设置用户信息
+kubectl config set-credentials system:kube-scheduler --client-certificate=scheduler.pem --client-key=scheduler-key.pem --embed-certs=true --kubeconfig=kube-scheduler.kubeconfig
 
-# 设置一个用户项
-kubectl config set-context system:kube-scheduler@kubernetes \
-     --cluster=kubernetes \
-     --user=system:kube-scheduler \
-     --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
+# 设置上下文信息
+kubectl config set-context system:kube-scheduler --cluster=kubernetes --user=system:kube-scheduler --kubeconfig=kube-scheduler.kubeconfig
 
-# 设置默认环境
-kubectl config use-context system:kube-scheduler@kubernetes \
-     --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
+# 设置默认的上下文
+kubectl config use-context system:kube-scheduler --kubeconfig=kube-scheduler.kubeconfig
+
+# 剪切到/etc/kubernetes
+mv kube-scheduler.kubeconfig /etc/kubernetes/
 ```
 
-`/etc/kubernetes/scheduler.kubeconfig`配置文件也只需生成一次，再传到其他主机即可。
+`/etc/kubernetes/kube-scheduler.kubeconfig`配置文件也只需生成一次，再传到其他主机即可。
+
+### 3.2 创建启动脚本
 
 创建scheluder启动脚本文件`/opt/kubernetes/server/bin/kube-scheduler.sh`文件，添加以下内容
 
@@ -147,16 +134,14 @@ kubectl config use-context system:kube-scheduler@kubernetes \
     --logtostderr=true \
     --bind-address=127.0.0.1 \
     --leader-elect=true \
-    --kubeconfig=/etc/kubernetes/scheduler.kubeconfig
+    --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig
 ```
 
 添加脚本执行权限与创建日志目录
 
 ```shell
 # 添加脚本的可执行权限
-chmod +x kube-scheduler.sh
-# 创建日志目录
-mkdir -p /data/logs/kubernetes/kube-scheduler
+chmod +x /opt/kubernetes/server/bin/kube-scheduler.sh
 ```
 
 创建进程管理配置文件`/etc/supervisor/conf.d/kube-scheduler.conf`文件，添加以下内容
@@ -175,7 +160,7 @@ stopsignal=QUIT
 stopwaitsecs=10
 user=root
 redirect_stderr=true
-stdout_logfile=/data/logs/kubernetes/kube-scheduler/scheduler.stdout.log
+stdout_logfile=/data/logs/supervisor/scheduler.stdout.log
 stdout_logfile_maxbytes=64MB
 stdout_logfile_backups=4
 stdout_capture_maxbytes=1MB
@@ -190,38 +175,34 @@ supervisorctl update
 
 ## 四、集群验证
 
-先创建一个管理员的配置项
+### 4.1 创建管理员配置
+
+创建管理员用户用的kubeconfig，最后拷贝为~/.kube/config作为默认的kubeconfig文件。
 
 ```bash
-# 设置一个集群项
-kubectl config set-cluster kubernetes \
-  --certificate-authority=/opt/certs/ca.pem \
-  --embed-certs=true \
-  --server=https://192.168.9.190:7443 \
-  --kubeconfig=/etc/kubernetes/admin.kubeconfig
+# 设置一个集群信息
+kubectl config set-cluster kubernetes --certificate-authority=ca.pem --embed-certs=true --server=https://192.168.9.190:7443 --kubeconfig=admin.conf
 
-# 设置一个环境项，一个上下文
-kubectl config set-credentials kubernetes-admin \
-  --client-certificate=/opt/certs/admin/admin.pem \
-  --client-key=/opt/certs/admin/admin-key.pem \
-  --embed-certs=true \
-  --kubeconfig=/etc/kubernetes/admin.kubeconfig
+# 设置用户信息
+kubectl config set-credentials admin --client-certificate=admin.pem --client-key=admin-key.pem --embed-certs=true --kubeconfig=admin.conf
 
-# 设置一个用户项
-kubectl config set-context kubernetes-admin@kubernetes \
-  --cluster=kubernetes \
-  --user=kubernetes-admin \
-  --kubeconfig=/etc/kubernetes/admin.kubeconfig
+# 设置上下文
+kubectl config set-context kubernetes --cluster=kubernetes --user=admin --kubeconfig=admin.conf
 
-# 设置默认环境
-kubectl config use-context kubernetes-admin@kubernetes  --kubeconfig=/etc/kubernetes/admin.kubeconfig
+# 设置默认上下文境
+kubectl config use-context kubernetes --kubeconfig=admin.conf
+
+# 移动
+mv admin.conf /etc/kubernetes/
 ```
 
-拷贝配置文件到用户目录
+创建好之后同步到其他节点，再拷贝配置文件到用户目录。
+
+### 4.2 使用管理员配置
 
 ```bash
 mkdir -p ~/.kube
-cp /etc/kubernetes/admin.kubeconfig ~/.kube/config
+cp /etc/kubernetes/admin.conf ~/.kube/config
 ```
 
 再使用`kubectl get cs`检查集群状态，如下返回如下内容，则代表正常服务
