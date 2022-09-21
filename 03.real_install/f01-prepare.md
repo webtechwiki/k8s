@@ -158,7 +158,7 @@ dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 
 ### 3.1 安装ipvsadm
 
-在所有主机上操作
+ipvsadm用于管理IPVS，在所有主机上操作
 
 ```bash
 # 安装
@@ -178,7 +178,7 @@ ipt_rpfilter
 ipt_REJECT
 ipip
 EOF
-# 重新加载系统模块
+# 重新加载IPVS系统模块
 systemctl restart systemd-modules-load.service
 ```
 
