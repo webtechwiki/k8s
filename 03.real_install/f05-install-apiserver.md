@@ -63,7 +63,7 @@ rm -rf server/bin/*.tar
     --advertise-address="192.168.9.160" \
     --service-cluster-ip-range="10.96.0.0/16" \
     --service-node-port-range="30000-60000" \
-    --etcd-servers="https://192.168.9.160:2379" \
+    --etcd-servers="https://192.168.9.199:2379,https://192.168.9.192:2379,https://192.168.9.160:2379" \
     --etcd-cafile="/etc/kubernetes/pki/ca.pem" \
     --etcd-certfile="/etc/kubernetes/pki/etcd.pem" \
     --etcd-keyfile="/etc/kubernetes/pki/etcd-key.pem" \
