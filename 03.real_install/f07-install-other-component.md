@@ -207,13 +207,4 @@ cp /etc/kubernetes/admin.conf ~/.kube/config
 
 再使用`kubectl get cs`检查集群状态，如下返回如下内容，则代表正常服务
 
-```shell
-[root@kb22 bin]# kubectl get cs
-NAME                 STATUS    MESSAGE             ERROR
-controller-manager   Healthy   ok                  
-scheduler            Healthy   ok                  
-etcd-0               Healthy   {"health":"true"}   
-etcd-1               Healthy   {"health":"true"}   
-etcd-2               Healthy   {"health":"true"}   
-[root@kb22 bin]#
-```
+![20220921111227](img/20220921111227.png)
