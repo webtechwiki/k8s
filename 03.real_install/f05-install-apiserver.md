@@ -19,7 +19,7 @@ cat > /etc/kubernetes/bb.csv <<EOF
 EOF
 ```
 
-这里第二列定义了一个用户名kubelet-bootstrap，后面在配置kubelet时会为此用户授权。
+这里第二列定义了一个用户名kubelet-bootstrap，后面在配置kubelet时会为此用户授权。创建好该文件后，同步到其他主机。
 
 ## 二、安装apiserver
 
@@ -57,13 +57,13 @@ rm -rf server/bin/*.tar
     --v=2 \
     --logtostderr=true \
     --allow-privileged=true \
-    --bind-address="192.168.9.199" \
+    --bind-address="192.168.9.160" \
     --secure-port="6443" \
-    --token-auth-file="/etc/kubernetes/bb.csv " \
-    --advertise-address="192.168.26.71" \
+    --token-auth-file="/etc/kubernetes/bb.csv" \
+    --advertise-address="192.168.9.160" \
     --service-cluster-ip-range="10.96.0.0/16" \
     --service-node-port-range="30000-60000" \
-    --etcd-servers="https://192.168.26.71:2379" \
+    --etcd-servers="https://192.168.9.160:2379" \
     --etcd-cafile="/etc/kubernetes/pki/ca.pem" \
     --etcd-certfile="/etc/kubernetes/pki/etcd.pem" \
     --etcd-keyfile="/etc/kubernetes/pki/etcd-key.pem" \
@@ -146,7 +146,7 @@ stopsignal=QUIT
 stopwaitsecs=10
 user=root
 redirect_stderr=true
-stdout_logfile=/data/logs/kubernetes/kube-apiserver/apiserver.stdout.log
+stdout_logfile=/data/logs/supervisor/apiserver.stdout.log
 stdout_logfile_maxbytes=64MB
 stdout_logfile_backups=4
 stdout_capture_maxbytes=1MB
