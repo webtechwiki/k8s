@@ -66,7 +66,7 @@ authorization:
     cacheUnauthorizedTTL: 0s
 cgroupDriver: systemd
 clusterDNS:
-- 192.168.0.2
+- 10.96.0.10
 clusterDomain: cluster.local
 cpuManagerReconcilePeriod: 0s
 evictionPressureTransitionPeriod: 0s
@@ -77,7 +77,7 @@ imageMinimumGCAge: 0s
 kind: KubeletConfiguration
 ```
 
-这里我们指定clusterDNS的IP是192.168.0.2。
+这里我们指定clusterDNS的IP是10.96.0.10。
 
 ## 三、配置kubelet启动脚本
 
