@@ -35,22 +35,21 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 ## 三、章节
 
-### 3.1 第一章：multipass+kubeadm搭建集群与快速入门
+### 3.1 第一章：ubuntu+kubeadm搭建k8s最新版
 
 - [01.在虚拟机中使用kubeadm快速搭建k8s集群](./01.basic/kb01-build_in_virtual.md)
-- [02.在物理机中使用kubeadm快速搭建k8s集群](./01.basic/kb02-build_in_real.md)
-- [03.k8s中的核心概念](./01.basic/kb03-conception.md)
-- [04.k8s中的核心组件](./01.basic/kb04-compoents.md)
-- [05.k8s资源清单文件](./01.basic/kb05-yaml.md)
-- [06.k8s名称空间](./01.basic/kb06-namespace.md)
-- [07.pod的相关操作](./01.basic/kb07-pod.md)
-- [08.Controller](./01.basic/kb08-controller.md)
-- [09.Service](./01.basic/kb09-service.md)
-- [10.Ingress](./01.basic/kb10-ingress.md)
-- [11.存储](./01.basic/kb11-storage.md)
-- [12.IP网段规划建议](./01.basic/kb12-ip_suggestion.md)
+- [02.k8s中的核心概念](./01.basic/kb02-conception.md)
+- [03.k8s中的核心组件](./01.basic/kb03-compoents.md)
+- [04.k8s资源清单文件](./01.basic/kb04-yaml.md)
+- [05.k8s名称空间](./01.basic/kb05-namespace.md)
+- [06.pod的相关操作](./01.basic/kb06-pod.md)
+- [07.Controller](./01.basic/kb07-controller.md)
+- [08.Service](./01.basic/kb08-service.md)
+- [09.Ingress](./01.basic/kb09-ingress.md)
+- [10.存储](./01.basic/kb10-storage.md)
+- [11.IP网段规划建议](./01.basic/kb11-ip_suggestion.md)
 
-### 3.2 第二章：vagrant+centos7使用二进制安装包的方式搭建集群
+### 3.2 第二章：centos7使用二进制搭建k8s 1.15.2
 
 - [01.k8s进阶知识概述](./02.forward/f01-summary.md)
 - [02.k8s二进制安装环境准备](./02.forward/f02-prepare.md)
@@ -73,7 +72,7 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [19.服务暴露之nodePort型service](./02.forward/f19-nodeport.md)
 - [20.服务暴露之Ingress](./02.forward/f20-ingress.md)
 
-### 3.3 第三章：在debian物理机器使用二进制安装包搭建集群
+### 3.3 第三章：使用debian物理机器二进制安装k8s 1.24.1
 
 - [01.k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
 - [02.安装containerd作为runtime](./03.real_install/f02-install_containerd.md)
