@@ -90,4 +90,3 @@ spec:
 ```bash
 kubectl apply -f coredns.yaml
 ```
-
