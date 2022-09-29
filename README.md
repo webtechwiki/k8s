@@ -84,3 +84,4 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 - [08.安装kubectl](./03.real_install/f08-install-kubelet.md)
 - [09.安装kube-proxy](./03.real_install/f09-install-kubeproxy.md)
 - [10.安装calico和coreDNS](./03.real_install/f10-install-calico-coredns.md)
+- [11.安装traefik-ingress](./03.real_install/f11-install-traefik.md)
