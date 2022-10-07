@@ -109,23 +109,23 @@ stdout_event_enabled=false
 
 supervisor相关参数：
 
-`program`: 程序名称
-`directory`: 脚本目录
-`command`: 启动的命令
-`numprocs`: 启动的进程数
-`autostart`: 是否开启自动启动
-`autorestart`: 是否自动重启
-`startsecs`: 启动之后多少时间后判定为已起来
-`startretries`: 重启次数
-`exitcodes`: 退出的code
-`stopsignal`: 停止信号
-`stopwaitsecs`: 停止等待的时间
-`redirect_stderr`: 是否重定向标准输出
-`stdout_logfile`: 进程标准输出内容写入文件
-`stdout_logfile_maxbytes`: stdout_logfile文件做log滚动时，单个stdout_logfile文件的最大字节数，默认50M，设置为0则认为不做log滚动方式
-`stdout_logfile_backups`: stdout_logfile备份文件个数，默认为10
-`stdout_capture_maxbytes`: 当进程处于stdout capture mode模式的时候，写入capture FIFO的最大字节数限制，默认为0，此时认为stdout capture mode模式关闭
-`stdout_event_enabled`: 如果设置为true，在进程写入标准文件是会发起PROCESS_LOG_STDOUT
+- `program`: 程序名称
+- `directory`: 脚本目录
+- `command`: 启动的命令
+- `numprocs`: 启动的进程数
+- `autostart`: 是否开启自动启动
+- `autorestart`: 是否自动重启
+- `startsecs`: 启动之后多少时间后判定为已起来
+- `startretries`: 重启次数
+- `exitcodes`: 退出的code
+- `stopsignal`: 停止信号
+- `stopwaitsecs`: 停止等待的时间
+- `redirect_stderr`: 是否重定向标准输出
+- `stdout_logfile`: 进程标准输出内容写入文件
+- `stdout_logfile_maxbytes`: stdout_logfile文件做log滚动时，单个stdout_logfile文件的最大字节数，默认50M，设置为0则认为不做log滚动方式
+- `stdout_logfile_backups`: stdout_logfile备份文件个数，默认为10
+- `stdout_capture_maxbytes`: 当进程处于stdout capture mode模式的时候，写入capture FIFO的最大字节数限制，默认为0，此时认为stdout capture mode模式关闭
+- `stdout_event_enabled`: 如果设置为true，在进程写入标准文件是会发起PROCESS_LOG_STDOUT
 
 更新supervisod配置文件
 
