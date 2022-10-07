@@ -66,10 +66,10 @@ kubernetes cluster.local in-addr.arpa ip6.arpa {
 }
 ```
 
-大概第66行，`UPSTREAMNAMESERVER`改为宿主机DNS`/etc/resolve.conf`，如下
+大概第66行，`UPSTREAMNAMESERVER`改为宿主机DNS配置`/etc/resolve.conf`，如下
 
 ```yaml
-forward . /etc/resol.conf {
+forward . /etc/resolve.conf {
   max_concurrent 1000
 }
 ```

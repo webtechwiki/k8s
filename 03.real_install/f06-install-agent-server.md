@@ -23,6 +23,9 @@ cd nginx-1.22.0
 --http-log-path=/data/log/nginx/access.log
 # 编译并安装
 make && make install
+# 设置链接
+ln -s /usr/local/nginx-1.22.0 /usr/local/nginx
+ln -s /usr/local/nginx/sbin/nginx /usr/local/bin/nginx
 ```
 
 ## 二、配置nginx
@@ -57,9 +60,6 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 配置成功之后，启动nginx，如下指令
 
 ```bash
-# 设置链接
-ln -s /usr/local/nginx-1.22.0 /usr/local/nginx
-ln -s /usr/local/nginx/sbin/nginx /usr/local/bin/nginx
 # 启动ginx，199主机使用 nginx -s reload重新加载配置即可
 nginx
 ```
@@ -177,4 +177,4 @@ systemctl enable keepalived
 
 ## 四、验证
 
-通过`ping 192.169.9.190`的方式，如果有正常返回，代表keepalived运行正常。
+通过`ping 192.169.9.190`的方式进行验证，如果有正常返回，代表keepalived运行正常。

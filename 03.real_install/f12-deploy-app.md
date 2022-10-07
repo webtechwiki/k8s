@@ -4,18 +4,18 @@
 
 部署k8s通常包含以下几个步骤
 
-- 1. 准备项目镜像，运行创建应用容器
-- 2. 通常创建Deployment资源的方式运行应用
-- 3. 创建应用的Service网络，用于关联Deployment
-- 4. 创建对应的Ingress资源，用于调度7层流量
+- 1.准备项目镜像，运行创建应用容器
+- 2.通常创建Deployment资源的方式运行应用
+- 3.创建应用的Service网络，用于关联Deployment
+- 4.创建对应的Ingress资源，用于调度7层流量
 
-在下面，我们使用声明式的管理方式（通常指通过yaml配置文件来管理集群）来创建各个集群资源，完成应用部署。
+在下文，我们使用声明式的管理方式（通常指通过yaml配置文件来管理集群）来创建各个集群资源，完成应用部署。
 
 ## 二、准备资源配置文件
 
 我们通过部署tomcat来演示一个应用在k8s部署的流程
 
-### 2.1 创建deploymeny
+### 2.1 声明deploymeny
 
 创建`03-whoami.yml`文件，添加以下内容
 
@@ -45,7 +45,7 @@ spec:
               containerPort: 8080
 ```
 
-### 2.2 创建service
+### 2.2 声明service
 
 创建`03-whoami-services.yml`文件，添加以下内容
 
@@ -65,7 +65,7 @@ spec:
     app: whoami
 ```
 
-### 2.3 创建ingress
+### 2.3 声明ingress
 
 创建`04-whoami-ingress.yml`，添加以下内容
 
@@ -85,10 +85,10 @@ spec:
           service:
             name: whoami
             port:
-              name: we
+              name: web
 ```
 
-## 三、验证
+## 三、资源创建与验证
 
 创建各个资源
 

@@ -1,4 +1,4 @@
-# 安装controller-manager和kube-scheduler
+# 安装controller-manager和scheduler
 
 ## 一、创建kubectl链接
 

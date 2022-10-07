@@ -129,7 +129,7 @@ supervisor相关参数：
 
 更新supervisod配置文件
 
-```shell
+```shell·
 # 创建supervisor日志目录
 mkdir -p /data/logs/supervisor/
 # 更新supervisod配置

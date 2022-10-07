@@ -1,4 +1,4 @@
-# 安装控制节点的apiserver
+# 安装apiserver
 
 搭建好etcd数据库集群之后，我们就可以安装apiserver组件了，在所有主机上安装apiserver，以下是具体的安装过程。
 

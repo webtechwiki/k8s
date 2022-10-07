@@ -1,4 +1,4 @@
-# 安装kube-proxy
+# 安装proxy
 
 ## 一、创建kubeconfig配置文件
 
@@ -136,8 +136,6 @@ subjects:
 ```
 
 ### 4.2 创建角色及授权
-
-```bash
 
 ```bash
 kubectl apply -f /etc/kubernetes/rbac.yaml
