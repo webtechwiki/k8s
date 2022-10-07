@@ -4,13 +4,13 @@
 
 ### 1.1 授权
 
-为用户kubelet-bootstrap授权，允许kubelet tls bootstrap创建CSR请求。
+为用户kubelet-bootstrap授权，允许kubelet tls bootstrap创建CSR请求，如下命令
 
 ```bash
 kubectl create clusterrolebinding kubelet-bootstrap1 --clusterrole=system:node-bootstrapper --user=kubelet-bootstrap
 ```
 
-把system:certificates.k8s.io:certificatesigningrequests:nodeclient授权给kubelet-bootstrap，目的是实现对CSR的自动审批。
+把system:certificates.k8s.io:certificatesigningrequests:nodeclient授权给kubelet-bootstrap，目的是实现对CSR的自动审批，如下命令
 
 ```bash
 kubectl create clusterrolebinding kubelet-bootstrap2 --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --user=kubelet-bootstrap
@@ -91,7 +91,7 @@ nerdctl pull registry.aliyuncs.com/google_containers/pause:3.6
 
 创建kubelet的启动脚本文件`/opt/kubernetes/server/bin/kubelet.sh`文件，添加以下内容
 
-```shell
+```bash
 #!/bin/bash
 ./kubelet \
     --bootstrap-kubeconfig=/etc/kubernetes/kubelet-bootstrap.conf  \
@@ -111,39 +111,13 @@ nerdctl pull registry.aliyuncs.com/google_containers/pause:3.6
 
 添加可执行权限
 
-```shell
+```bash
 chmod +x /opt/kubernetes/server/bin/kubelet.sh
 ```
 
-参数说明：
-
-`anonymous-auth=false`: 不能使用匿名登录
-
-`cgroup-driver systemd`: 要与docker保持一致
-
-`cluster-dns`: 集群的dns，这里先固定写，后续会提到
-
-`node-ip`: 节点ip，和主机ip一致
-
-`fail-swap-on="false"`: k8s运算时最好把swap关闭掉，但我们其他程序可能需要，所以添加该选项，会兼容swap存在的场景
-
-`client-ca-file`:根证书
-
-`tls-cert-file`:kubelet作为服务端需要的证书
-
-`tls-private-key-file`:kubelet作为服务端需要的证书私钥
-
-`hostname-override`: 主机名称
-
-`kubeconfig`: kubelet配置文件路径
-
-`log-dir`: 日志目录
-
-`pod-infra-container-image`: 基础的pause镜像
-
 创建数据目录和日志目录
 
-```shell
+```bash
 # 创建kubelet所需要的日志目录
 mkdir -p /var/log/kubernetes
 ```
@@ -175,7 +149,7 @@ stdout_event_enabled=false
 
 更新supervisord，如下命令
 
-```shell-script
+```bash-script
 supervisorctl update
 ```
 
@@ -183,13 +157,13 @@ supervisorctl update
 
 此时，服务已经正常运行了，可以使用以下`kubectl`命令在查看节点信息
 
-```shell
+```bash
 kubectl get nodes
 ```
 
 如果看到以下信息，代表安装成功
 
-```shell
+```bash
 root@199-debian:/etc/kubernetes# kubectl get nodes
 NAME       STATUS   ROLES    AGE   VERSION
 node-160   Ready    <none>   40s   v1.24.1
@@ -198,7 +172,7 @@ node-192   Ready    <none>   47s   v1.24.1
 
 我们还可以设置集群的标签
 
-```shell
+```bash
 # 设置集群为node标签
 kubectl label node node-160 node-role.kubernetes.io/node=
 kubectl label node node-192 node-role.kubernetes.io/node=

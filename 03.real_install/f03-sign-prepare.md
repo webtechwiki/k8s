@@ -6,7 +6,7 @@
 
 cfssl 工具的下载地址为：[https://github.com/cloudflare/cfssl/releases](https://github.com/cloudflare/cfssl/releases)
 
-我们下载安装`cfssl`、`cfssl-json`、`cfssl-certingo`，如下指令
+我们下载并安装`cfssl`、`cfssl-json`、`cfssl-certingo`，如下命令
 
 ```bash
 # cfssl
@@ -110,9 +110,9 @@ cfssl gencert -initca ca-csr.json | cfssljson -bare ca
 
 最后一个参数指定了证书文件名，最后生成以下三个文件
 
-`ca.csr`:  证书签名申请（Certificate Signing Request）文件
-`ca.pem`: ca公钥证书
-`ca-key.pem`: ca私钥证书
+- `ca.csr`:  证书签名申请（Certificate Signing Request）文件
+- `ca.pem`: ca公钥证书
+- `ca-key.pem`: ca私钥证书
 
 生成的三个文件也就是根证书包含的内容。在后续，我们给各个服务颁发证书的时候，都基于CA根证书来颁发。
 
@@ -282,7 +282,7 @@ cat > /etc/kubernetes/pki/controller-manager-csr.json <<EOF
 EOF
 ```
 
-hosts 列表包含所有 kube-controller-manager 节点 IP；CN 为 system:kube-controller-manager，O 为 system:kube-controller-manager，k8s里内置的ClusterRoleBindings system:kube-controller-manager 授权用户 kube-controller-manager所需的权限。后面组件证书都做类似操作。生成证书命令如下
+hosts 列表包含所有 kube-controller-manager 节点 IP；CN 为 system:kube-controller-manager，O 为 system:kube-controller-manager，k8s里内置的ClusterRoleBindings system:kube-controller-manager 授权 kube-controller-manager所需的权限。后面组件证书都做类似操作。生成证书命令如下
 
 ```bash
 cfssl gencert -ca=ca.pem -ca-key=ca-key.pem -config=ca-config.json -profile=www controller-manager-csr.json | cfssljson -bare controller-manager

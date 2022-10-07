@@ -12,7 +12,7 @@ ln -s /opt/kubernetes/server/bin/kubectl /usr/local/bin/kubectl
 
 ### 2.1 创建配置
 
-controller-manager和apiserver之间的认证是通过kubeconfig的方式来认证的，即controller-manager的私钥、公钥及CA的证书要放在一个kubeconfig文件里。下面创建controller-manager所用的kubeconfig文件kube-controller-manager.kubeconfig，现在在/etc/kubernetes/pki里创建，然后剪切到/etc/kubernetes里。
+controller-manager和apiserver之间的认证是通过kubeconfig的方式来认证的，即controller-manager的私钥、公钥及CA的证书要放在一个kubeconfig文件里。下面创建controller-manager所用的kubeconfig文件kube-controller-manager.kubeconfig，现在在`/etc/kubernetes/pki`里创建，然后移动到`/etc/kubernetes`里。
 
 ```bash
 # 进入证书目录
@@ -205,6 +205,18 @@ mkdir -p ~/.kube
 cp /etc/kubernetes/admin.conf ~/.kube/config
 ```
 
-再使用`kubectl get cs`检查集群状态，如下返回如下内容，则代表正常服务
+使用`kubectl get cs`检查集群状态，这时候你会发现类似如下的错误
+
+```bash
+Error from server (Forbidden): Forbidden (user=admin, verb=get, resource=nodes, subresource=proxy)
+```
+
+这代表我们创建的`admin`用户没有集群管理权限，绑定一个`cluster-admin`角色即可，如下命令
+
+```bash
+kubectl create clusterrolebinding system:anonymous --clusterrole=cluster-admin --user=admin
+```
+
+最后再使用`kubectl get cs`查看集群，如返回以下类似内容，则代表集群控制节点的服务正常
 
 ![20220921111227](img/20220921111227.png)

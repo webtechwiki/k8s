@@ -69,9 +69,9 @@ ln -s /opt/etcd-v3.5.4 /opt/etcd
 chmod +x /opt/etcd/startup.sh
 ```
 
-## 四、使用supervisord来启动etcd
+## 四、使用supervisor来启动etcd
 
-现在我们要安装supervisord，用于管理etcd服务，后续的k8s相关组件，我们都用supervisord来管理
+现在我们要安装supervisor，用于管理etcd服务，后续的k8s相关组件，我们都用supervisor来管理
 
 ```shell
 # 安装supervisor
@@ -107,7 +107,7 @@ stdout_event_enabled=false
 
 > 注意：在不同的主机上使用不同的服务名称，这样好辨别，如199-debian使用`etcd-server-199`，如192-debian使用`etcd-server-192`
 
-相关参数：
+supervisor相关参数：
 
 `program`: 程序名称
 `directory`: 脚本目录

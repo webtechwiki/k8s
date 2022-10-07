@@ -22,7 +22,7 @@ wget https://docs.projectcalico.org/manifests/calico.yaml
 kubectl apply -fcalico.yaml
 ```
 
-执行命令之后，calico会拉去远端的镜像，并运行，等待所有节点上的处于`Running`状态代表服务启动完成，如下
+执行命令之后，calico会拉去远端的镜像并运行，等到所有pod都处于`Running`状态代表服务启动完成，如下
 
 ```bash
 root@199-debian:/etc/kubernetes# kubectl get pods -n kube-system
@@ -32,14 +32,14 @@ calico-node-9bt29                          1/1     Running   0          3m34s
 calico-node-djxvc                          1/1     Running   0          3m34s
 ```
 
-此时calico已经正常运行了，如果上接创建的nginx的pod还没有删除的话，先删除掉再创建，如下命令
+此时calico已经正常运行了，如果上节创建的nginx的pod还没有删除的话，先删除掉再创建，如下命令
 
 ```bash
 kubectl delete -f nginx-pod.yaml
 kubectl apply -f nginx-pod.yaml
 ```
 
-创建新的pod之后，使用`kubectl get pod -o wide`查看pod所处的节点，此时我们在任一工作节点请求该IP，都能成功请求。
+创建新的pod之后，使用`kubectl get pod -o wide`查看pod所处的节点，此时我们在任意工作节点请求该IP，都能成功请求。
 
 ## 二、安装coredns
 

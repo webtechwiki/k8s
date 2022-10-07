@@ -1,6 +1,6 @@
-# 使用二进制安装包的方式安装docker
+# 扩展:使用二进制安装包安装docker
 
-本文参考[docker官方文档](https://docs.docker.com/engine/install/binaries/)
+本文参考[docker官方文档](https://docs.docker.com/engine/install/binaries/)，新版本的kubernetes并不推荐使用docker作为集群的运行时环境，我们也不把docker作为集群的运行时环境。这里安装docker只是备用，或者用于其他用途。
 
 ## 一、安装docker
 
@@ -8,13 +8,13 @@
 
 docker二进制安装包的下载地址为：[https://download.docker.com/linux/static/stable/](https://download.docker.com/linux/static/stable/)
 
-需要注意的是，我们现在装的docker版本必须对应上即将安装的k8s版本，理论上越新的k8s版本支持的docker版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对新的版本`20.10.16`。
+需要注意的是，如果使用docker最为k8s的运行时，安装的docker版本必须对应上安装的k8s版本。理论上越新的k8s版本支持的docker版本越多，但要注意的是，如果选择太新的docker，即使是最新的k8s版本也可能来还来不急做适配。这里我们选择一个相对新的版本`20.10.14`。
 
 ```shell
 # 下载二进制安装包
-wget https://download.docker.com/linux/static/stable/x86_64/docker-20.10.16.tgz
+wget https://download.docker.com/linux/static/stable/x86_64/docker-20.10.14.tgz
 # 解压安装包
-tar -zxvf docker-20.10.16.tgz
+tar -zxvf docker-20.10.14.tgz
 # 赋予所有二进制文件可之行权限
 chmod +x docker/*
 # 将解压包里的内容移动系统的可执行文件目录中
@@ -53,44 +53,9 @@ cgroupfs-mount
 systemctl enable cgroupfs-mount
 ```
 
-### 3.2 containerd服务配置
+### 3.2 关于containerd
 
-编写`containerd`的服务配置文件`/usr/lib/systemd/system/containerd.service`，写入如下内容
-
-```ini
-[Unit]
-Description=containerd container runtime
-Documentation=https://containerd.io
-After=network.target local-fs.target
-
-[Service]
-ExecStartPre=-/sbin/modprobe overlay
-ExecStart=/usr/bin/containerd
-
-Type=notify
-Delegate=yes
-KillMode=process
-Restart=always
-RestartSec=5
-
-LimitNPROC=infinity
-LimitCORE=infinity
-LimitNOFILE=infinity
-
-TasksMax=infinity
-OOMScoreAdjust=-999
-
-[Install]
-WantedBy=multi-user.target
-```
-
-启动与`containerd`并设置为开机自启
-
-```bash
-systemctl daemon-reload
-systemctl start containerd.service
-systemctl enable containerd.service
-```
+实际上docker运行的时候会依赖containerd，不过我们在前面已经安装了containerd（路径在/usr/local/bin/containerd），docker二进制安装包包含的containerd（路径在/usr/bin/containerd）就不用管了。
 
 ### 3.3 docker服务配置
 

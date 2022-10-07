@@ -1,8 +1,10 @@
-# 安装L4反向代理服务
+# 搭建L4反向代理服务
+
+我们需要在`199-debian`和`192-debian`上安装nginx作为反向代理服务，然后使用keepalived保证高可用性
 
 ## 一、安装nginx
 
-我们需要在`199-debian`和`192-debian`上安装keepalived，先安装linux，`199-debian`已经安装过，`192-debian`需要安装
+`199-debian`在安装harbor时已经安装过，需要继续在`192-debian`上安装
 
 ```bash
 # 下载代码
@@ -23,7 +25,9 @@ cd nginx-1.22.0
 make && make install
 ```
 
-安装完成之后，我们需要两台机的nginx的配置文件`/usr/local/nginx/conf/nginx.conf`的`http`节点旁边添加四层反向代码规则
+## 二、配置nginx
+
+安装完成之后，我们需要两台机的nginx的配置文件`/usr/local/nginx/conf/nginx.conf`的`http`节点旁边添加四层反向代码规则，将7443端口的流量使用负载均衡的方式转发到3台主机的6443端口上
 
 ```shell
 # 设置代理规则
@@ -42,7 +46,7 @@ stream {
 }
 ```
 
-通过以上的配置可知，我们将`199-debian`和`192-debian`本机的7443端口反向代码到了`199-debian`和`192-debian`的6443端口。在两台主机上配置好规则之后，通过`nginx -t`命令检查配置结果，如果输出以下内容代表配置正确
+在两台主机上配置好规则之后，通过`nginx -t`命令检查配置结果，如果输出以下内容代表配置正确
 
 ```shell
 [root@199-debian vagrant]# nginx -t
@@ -60,7 +64,7 @@ ln -s /usr/local/nginx/sbin/nginx /usr/local/bin/nginx
 nginx
 ```
 
-## 二、安装keepalived
+## 三、安装keepalived
 
 我们将使用keepalived实现代理服务器的高可用，以下是安装过程
 
@@ -92,9 +96,9 @@ chmod +x /etc/keepalived/check_port.sh
 
 以上的操作就准备好keepalived的基础环境了，接下来我们使用`199-debian`这台主机作为主节点，使用`192-debian`作为重节点，进行以下配置
 
-`199-debian`主节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
+`199-debian`作为主节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
 
-```shell
+```bash
 ! Configuration File for keepalived
 
 global_defs {
@@ -126,9 +130,9 @@ vrrp_instance VI_1 {
 }
 ```
 
-`192-debian`从节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
+`192-debian`作为从节点，修改`/etc/keepalived/keepalived.conf`配置文件如下
 
-```shell
+```bash
 ! Configuration File for keepalived
 
 global_defs {
@@ -169,8 +173,8 @@ systemctl restart keepalived
 systemctl enable keepalived
 ```
 
-需要主机的是，`interface`参数对应的是真实的主机网卡名称，`virtual_router_id`参数需要在同一个虚拟IP的前提下，设置需一致。
+需要注意的是，`interface`参数对应的是真实的主机网卡名称，`virtual_router_id`参数需要在同一个虚拟IP的前提下，设置需一致。
 
-## 三、验证
+## 四、验证
 
-通过`ping 192.169.9.190`的方式，如果有正常返回，代表keepalived运行成功。
+通过`ping 192.169.9.190`的方式，如果有正常返回，代表keepalived运行正常。

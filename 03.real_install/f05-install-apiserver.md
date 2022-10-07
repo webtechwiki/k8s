@@ -96,41 +96,36 @@ chmod +x /opt/kubernetes/server/bin/kube-apiserver.sh
 
 上面注释的部分是配置聚合层的，本环境里没有启用聚合层所以这些选项被注释了，如果配置了聚合层的话，则需要把#取消。相关参数说明
 
-`--audit-log-path`：api请求的日志文件目录
-`--audit-policy-file`：定义审核策略配置的文件的路径
-`--authorization-mode`：授权模式
-`--client-ca-file`：访问apiserver时使用，客户端ca文件
-`--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
-`--v`：日志输出级别
-`--log-dir`：日志目录，如果为空，日志写在当前目录
-`--audit-log-maxage`：根据文件名中编码的时间戳，保留旧审核日志文件的最大天数
-`--audit-log-maxbackup`：保留旧审核日志文件的最大文件数量
-`--audit-log-maxsize`：日志循环前，文件最大小的最大M数
-`--bind-address`：--secure-port参数指定的端口号对应监听的IP地址，如果没有指定地址（0.0.0.0或者::），默认是 0.0.0.0，代表所有的网卡都在监听服务
-`--secure-port`：https服务的端口号，默认是6443
-`--advertise-address`：向集群广播的ip地址，这个ip地址必须能被集群的其他节点访问，如果不指定，将使用--bind-address，如果不指定--bind-addres，将使用默认网卡
-`--allow-privileged`：是否使用超级管理员权限创建容器，默认为false
-`--enable-admission-plugins`：允许使用的插件
-`--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书。本次我们暂未使用
-`--token-auth-file`：该文件用于指定api-server颁发证书的token授权。本次我们暂未使用
-`--etcd-servers`：各个etcd节点的IP和端口号
-`--etcd-cafile`：访问etcd时使用，ectd的ca文件
-`--etcd-certfile`：访问etcd时使用，ectd的证书文件
-`--etcd-keyfile`：访问etcd时使用，ectd的证书私钥文件
-`--service-cluster-ip-range`：创建service时，使用的虚拟网段
-`--service-node-port-range`：创建service时，服务端口使用的端口范围（默认 30000-32767）
-`--service-account-key-file`：包含 PEM 编码的 x509 RSA 或 ECDSA 私钥或公钥的文件，用于验证服务帐户令牌，可以是多个。如果没有指定，使用--tls-private-key-file指定的文件
-`--tls-cert-file`：访问apiserver时使用，tls证书文件
-`--tls-private-key-file`：访问apiserver时使用，tls证书私钥文件
-`--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
-`--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
-`--requestheader-allowed-names`：允许访问的客户端 common names 列表，通过 header 中 –requestheader-username-headers 参数指定的字段获取。客户端 common names 的名称需要在 client-ca-file 中进行设置，将其设置为空值时，表示任意客户端都可访问。
+- `--v`：日志输出级别
+- `--logtostderr`：将输出记录到标准日志，而不是文件，默认是true
+- `--allow-privileged`：是否使用超级管理员权限创建容器，默认为false
+- `--bind-address`：绑定的IP地址，如果没有指定地址（0.0.0.0或者::），默认是 0.0.0.0，代表所有的网卡都在监听服务
+- `--secure-port`：参数指定的端口号对应监听的IP地址
+- `--token-auth-file`：该文件用于指定api-server颁发证书的token授权
+- `--advertise-address`：向集群广播的ip地址，这个ip地址必须能被集群的其他节点访问，如果不指定，将使用--bind-address，如果不指定--bind-addres，将使用默认网卡
+- `--service-cluster-ip-range`：创建service时，使用的虚拟网段
+- `--service-node-port-range`：创建service时，服务端口使用的端口范围（默认 30000-32767）
+- `--etcd-cafile`：访问etcd时使用，ectd的ca文件
+- `--etcd-certfile`：访问etcd时使用，ectd的证书文件
+- `--etcd-servers`：各个etcd节点的IP和端口号
+- `--etcd-keyfile`：访问etcd时使用，ectd的证书私钥文件
+- `--client-ca-file`：访问apiserver时使用，客户端ca文件
+- `--tls-cert-file`：访问apiserver时使用，tls证书文件
+- `--tls-private-key-file`：访问apiserver时使用，tls证书私钥文件
+- `--kubelet-client-certificate`：访问kubelet时使用，客户端证书路径
+- `--kubelet-client-key`：访问kubelet时使用，客户端证书私钥
+- `--service-account-key-file`：包含 PEM 编码的 x509 RSA 或 ECDSA 私钥或公钥，用来检查 ServiceAccount 的令牌
+- `--service-account-signing-key-file`：指向包含当前服务账号令牌发放者的私钥的文件路径。 此发放者使用此私钥来签署所发放的 ID 令牌
+- `--service-account-issuer`：服务账户令牌发放者的身份标识
+- `--enable-admission-plugins`：允许使用的插件
+- `--authorization-mode`：授权模式
+- `--enable-bootstrap-token-auth`：是否使用token的方式来自动颁发证书，如果主机节点比较多的时候，手动颁发证书可能不太现实，可以使用基于token的方式自动颁发证书
 
 以上是我们在启动apiserver的时候常用的参数，apiserver具有很多参数，很多参数也有默认值，可以`./kube-apiserver --hep`命令查看更多的帮助。
 
 ### 3.2 使用supervisor运行
 
-创建supervisor进程配置文件`/etc/supervisor/conf.d/kube-apiserver.conf`
+创建supervisor配置文件`/etc/supervisor/conf.d/kube-apiserver.conf`
 
 ```ini
 [program:kube-apiserver-160]

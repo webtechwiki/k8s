@@ -4,7 +4,7 @@
 
 ### 1.1 集群主机规划
 
-准备基础的设备如下，所有的机器都是x86的64位架构，并且安装`Debian GNU/Linux 11 (bullseye)`，因为新版的操作系统更容易兼容市面上各种新版的程序。各个主机配置如下
+所有机器的CPU都是x86的64位架构，并且安装了`Debian GNU/Linux 11 (bullseye)`。各个主机配置如下
 
 |    主机    |      IP       |            操作系统            |               配置                |
 | ---------- | ------------- | ------------------------------ | --------------------------------- |
@@ -14,7 +14,7 @@
 
 由于`199-debian`这台主机的内存资源相对充足，所以我们使用这台机充当了更多的角色，各个主机角色规划如下
 
-- `199-debian`: etcd服务器、控制节点、Proxy的L4、L7代理，同时作为运维主机：签发证书服务器、dns服务器、Docker的私有仓库、k8s资源配置清单仓库、提供共享存储（NFS）
+- `199-debian`: etcd服务器、控制节点、Proxy的L4、L7代理，同时作为运维主机，一些额外的服务由该主机提供，如：签发证书、dns服务、Docker的私有仓库服务、k8s资源配置清单仓库服务、共享存储（NFS）服务等。不过这些额外服务在需要的时候再安装，现在只是这么规划
 
 - `192-debian`: etcd服务器、控制节点、Proxy的L4、L7代理、工作节点
 
@@ -29,8 +29,8 @@
 | cni-plugins       | v1.1.1   | <https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz>    |
 | crictl            | v1.24.2  | <https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz>      |
 | containerd        | 1.6.4    | <https://github.com/containerd/containerd/releases/download/v1.6.4/cri-containerd-cni-1.6.4-linux-amd64.tar.gz> |
+| nerdctl           | 0.20.0   | <https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-amd64.tar.gz>             |
 | docker-ce         | 20.10.14 | <https://download.docker.com/linux/static/stable/x86_64/docker-20.10.14.tgz>                                    |
-| nerdctl           | 20.10.14 | <https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-amd64.tar.gz>             |
 
 在撰写此文的时候，`kubernetes`的最新版本是`1.25.1`，我们决定选择一个较新的版本`1.24.1`，并选择与之兼容的各个集群基础组件或集群插件的较新版本。我们先把所有的安装包下载到三台服务器，得到如下文件列表
 
@@ -76,9 +76,9 @@ dnssec-validation no;
 
 ### 2.2 配置域名解析
 
-在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。集群中的所有主机都设置我们自己搭建的DNS服务，以下是具体操作过程：
+在这里，我们不赘述域名解析以及相关软件的相关知识，如果你在阅读本文有困难时，建议先去了解 **dsn服务器** 以及 **bind9软件** 的相关知识。集群中的所有主机都使用我们自己搭建的DNS服务，以下是具体操作过程：
 
-修改区域配置文件 `/etc/bind/named.conf.local`，我们将`k8s.com`作为集群的业务域名，后续使用该域名访问集群的相关服务，添加如下正向解析区域
+修改区域配置文件 `/etc/bind/named.conf.local`，我们将`k8s.com`作为集群的业务域名，后续使用该域名访问集群的相关服务，添加正向解析区域，如下
 
 ```bash
 zone "k8s.com" {
@@ -108,7 +108,7 @@ dns             A      192.168.9.199
 160-debian      A      192.168.9.160
 ```
 
-修改`/etc/bind/named.conf.options`，找到`forwarders`关键字取消该“配置块”的注释，并设置上游dns服务器，我的局域网真实的dns是`192.168.9.253`，修改位如下内容
+修改`/etc/bind/named.conf.options`，找到`forwarders`关键字取消该“配置块”的注释，并设置上游dns服务器，我的局域网真实的dns是`192.168.9.253`，修改为如下内容
 
 ```bash
 forwarders {
@@ -154,13 +154,13 @@ dns-nameservers 192.168.9.199 192.168.9.253 192.168.9.252
 /etc/init.d/networking restart
 ```
 
-重启网络之后，要检查`/etc/resolv.conf`是否已经加上我们追加的DNS，并检查自定义的域名解析是否生效。
+重启网络之后，要检查`/etc/resolv.conf`是否已经追加我们自建的DNS，并检查自定义的域名解析是否生效。
 
 ## 三、机器初始化配置
 
 ### 3.1 安装ipvsadm
 
-ipvsadm用于管理IPVS，在所有主机上操作
+在所有主机上操作，安装ipvsadm后续用于管理IPVS，并加载k8s需要的模块
 
 ```bash
 # 安装
@@ -208,7 +208,7 @@ libcrc32c              16384  5 nf_conntrack,nf_nat,nf_tables,raid456,ip_v
 
 ### 3.2 修改内核参数
 
-在所有主机上操作
+在所有主机上操作，以下的配置在k8s运行时需要
 
 ```bash
 # 写入内核配置文件
@@ -242,7 +242,7 @@ hostnamectl set-hostname 192-debian
 hostnamectl set-hostname 160-debian
 ```
 
-所有主机追加静态解析，如下
+在所有主机追加hosts解析，如下
 
 ```bash
 cat >> /etc/hosts <<EOF

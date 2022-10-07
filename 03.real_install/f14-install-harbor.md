@@ -1,4 +1,4 @@
-# 安装harbor
+# 扩展:安装harbor
 
 harbor是docker镜像管理软件，我们可以使用harbor搭建自己的镜像服务。在编写此文档的时候，harbor的最新版本是`2.6.0`。我们将在`199-debian`这台主机上搭建harbor服务，在本文，我们一起探讨harbor服务的搭建过程。
 
@@ -188,9 +188,7 @@ harbor    A   192.168.9.199
 
 ## 六、推送镜像
 
-harhor服务安装成功后，我们尝试将镜像推送到harbor中，使用`docker login harbor.k8s.com`命令登录到harbor。账号是`admin`，密码是配置文件中的`Harbor123456`，如果返回类似如下内容，代表登录成功
-
-![20220917000839](img/20220917000839.png)
+harhor服务安装成功后，我们尝试将镜像推送到harbor中，使用`docker login harbor.k8s.com`命令登录到harbor。账号是`admin`，密码是配置文件中的`Harbor123456`。
 
 接下来进行镜像推送操作
 
@@ -203,6 +201,4 @@ docker tag nginx:alpine harbor.k8s.com/library/nginx:alpine
 docker push harbor.k8s.com/library/nginx:alpine
 ```
 
-如果推送镜像能正常输入以下结果，代表harbor服务正常
-
-![20220917001413](img/20220917001413.png)
+如果没有任何报错，代表harbor服务正常运行。

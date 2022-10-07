@@ -74,14 +74,20 @@ k8s是Kubernetes的简称，来自Google，是用于自动部署、扩展和管�
 
 ### 3.3 第三章：使用debian物理机器二进制安装k8s 1.24.1
 
+序言-[从零搭建k8s内网集群的实现方案](./03.real_install/README.md)
+
 - [01.k8s二进制安装环境准备](./03.real_install/f01-prepare.md)
 - [02.安装containerd作为runtime](./03.real_install/f02-install_containerd.md)
 - [03.签发SSL证书](./03.real_install/f03-sign-prepare.md)
 - [04.安装etcd服务](./03.real_install/f04-install-ectd.md)
 - [05.安装apiserver](./03.real_install/f05-install-apiserver.md)
-- [06.安装L4反向代理服务](./03.real_install/f06-install-agent-server.md)
+- [06.搭建L4反向代理服务](./03.real_install/f06-install-agent-server.md)
 - [07.安装controller-manager和kube-scheduler](./03.real_install/f07-install-other-component.md)
 - [08.安装kubectl](./03.real_install/f08-install-kubelet.md)
 - [09.安装kube-proxy](./03.real_install/f09-install-kubeproxy.md)
 - [10.安装calico和coreDNS](./03.real_install/f10-install-calico-coredns.md)
 - [11.安装traefik-ingress](./03.real_install/f11-install-traefik.md)
+- [12.在k8s环境部署应用](./03.real_install/f12-deploy-app.md)
+
+- [13.扩展:使用二进制安装包安装docker](./03.real_install/f13-install-docker.md)
+- [14.扩展:安装harbor](./03.real_install/f14-install-harbor.md)

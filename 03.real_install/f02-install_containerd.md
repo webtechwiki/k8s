@@ -47,7 +47,7 @@ sed -i "s#SystemdCgroup\ \=\ false#SystemdCgroup\ \=\ true#g" /etc/containerd/co
 cat /etc/containerd/config.toml | grep SystemdCgroup
 ```
 
-修改容器基础镜像地址为阿里云
+修改基础容器镜像地址为阿里云
 
 ```bash
 # 修改
@@ -86,7 +86,7 @@ crictl info
 
 ## 六、安装nerdctl
 
-Nerdctl是一个相对较新的containerd命令行客户端。nerdctl的目标是用户友好和docker兼容。在某种程度上，nerdctl + containerd可以无缝地替代docker + dockerd。nerdctl的目标是促进试验Docker中没有的最前沿的容器特性。需要在三台主机上安装，直接解压到对应目录即可完成安装
+Nerdctl是一个相对较新的containerd命令行客户端。nerdctl的目标是提供友好的用户体验，并和docker兼容。在某种程度上，nerdctl + containerd可以无缝地替代docker + dockerd。nerdctl的目标是促进试验Docker中没有的最前沿的容器特性。需要在三台主机上安装，直接解压到`/usr/bin`目录即可完成安装
 
 ```bash
 tar -zxvf nerdctl-0.20.0-linux-amd64.tar.gz -C /usr/bin/ nerdctl
