@@ -54,4 +54,10 @@
 
 [12. 在k8s环境部署应用](./f12-deploy-app.md)
 
+[13. 附加:安装docker](./f13-install-docker.md)
+
+[14. 附加:安装harbor](./f14-install-harbor.md)
+
+[15. 附加:解决centos6镜像启动容器失败的问题](./f15-run-centos6.md)
+
 不过本系列文档在演示集群搭建的过程中，并不会特意强调kubernetes的一些基础概念。相关概念可以参考k8s官方文档：<https://kubernetes.io/zh-cn/>
