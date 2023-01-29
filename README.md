@@ -2,8 +2,8 @@
 
 ## 一、概述
 
-- **作者网站**：[blog.jkdev.cn](https://blog.jkdev.cn)
-- **作者公众号**：极客开发者
+- **博客**：[https://jiker.dev](https://jiker.dev)
+- **公众号**：极客开发者
 
 **阅读对象**：后端工程师、运维工程师、Linux爱好者、k8s爱好者
 
