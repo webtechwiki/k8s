@@ -169,4 +169,6 @@ spec:
       path: /var/data/nfs # 共享文件路径
 ```
 
-当我们访问pod中的nginx之后，将看到master节点的`/var/data/nfs`目录下产生了相关日志文件
+当我们访问pod中的nginx之后，将看到master节点的`/var/data/nfs`目录下产生了相关日志文件。
+
+> 这里有一篇文章讲的更详细的文章，可以参考：<https://my.oschina.net/upyun/blog/5959546>

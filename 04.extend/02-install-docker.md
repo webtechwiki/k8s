@@ -29,7 +29,7 @@ mv docker/* /usr/bin
 {
   "storage-driver": "overlay2",
   "insecure-registries": ["harbor.k8s.com"],
-  "registry-mirrors": ["https://g6ogy192.mirror.aliyuncs.com"],
+  "registry-mirrors": ["https://registry.cn-hangzhou.aliyuncs.com"],
   "bip": "172.7.199.1/24",
   "exec-opts": ["native.cgroupdriver=systemd"],
   "live-restore": true

@@ -1,4 +1,4 @@
-# 扩展:安装harbor
+# 搭建harbor私有镜像仓库
 
 harbor是docker镜像管理软件，我们可以使用harbor搭建自己的镜像服务。在编写此文档的时候，harbor的最新版本是`2.6.0`。我们将在`199-debian`这台主机上搭建harbor服务，在本文，我们一起探讨harbor服务的搭建过程。
 

@@ -1,8 +1,6 @@
-# 序言
+# k8s资源分类
 
-## 一、k8s资源分类
-
-### 1.1 wordflow类
+## 一、wordflow类
 
 - pods
 - replicasets/rs
@@ -12,7 +10,7 @@
 - cronjobs/cj
 - jobs
 
-### 1.2 网络负载类
+## 二、网络负载类
 
 - endpoints/ep
 - ingresses/ing
@@ -20,7 +18,7 @@
 - services/svc
 - networkpolicies/netpol
 
-### 1.3 存储配置类
+## 三、存储配置类
 
 namespace级
 
@@ -34,7 +32,7 @@ namespace级
 - storageclasses/sc
 - persistentvolumes/pv
 
-### 1.4 权限类
+## 四、权限类
 
 namespace级
 
@@ -50,7 +48,7 @@ namespace级
 - roleBinding
 - clusterrolebinding
 
-### 1.5 集群管理类
+## 五、集群管理类
 
 - namespace/ns
 - node/no
