@@ -7,6 +7,8 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <!-- 评论 -->
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.css">
 </head>
 <body>
   <div id="app"></div>
@@ -20,6 +22,9 @@
   </script>
   <!-- Docsify v4 -->
   <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+  <!-- 代码高亮 -->
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-php.min.js"></script>
   <!-- 图片缩放 -->
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
   <!-- 复制代码 -->
@@ -27,20 +32,19 @@
   <!-- 在github上编辑 -->
   <script src="//cdn.jsdelivr.net/npm/docsify-edit-on-github"></script>
   <!-- 评论 -->
-  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.css">
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/gitalk.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js"></script>
   <script>
-    // const gitalk = new Gitalk({
-    //   clientID: '0bd367abea2eb7726225',
-    //   clientSecret: '6046591d4a6ee5fffd828357e0a7ed465883f105',
-    //   repo: 'kubernetes',
-    //   owner: 'jikerdev',
-    //   admin: ['jikerdev'],
-    //   language:'zh-CN',
-    //   // facebook-like distraction free mode
-    //   distractionFreeMode: false
-    // })
+    const gitalk = new Gitalk({
+      clientID: '088d9e4f95c8a2c65ed9',
+      clientSecret: '5873aec29164dede9a6998221a39df9ad157c3a6',
+      repo: 'kubernetes',
+      owner: 'jikerdev',
+      admin: ['jikerdev'],
+      language:'zh-CN',
+      id: decodeURI(window.location.pathname),
+      distractionFreeMode: false
+    })
   </script>
 </body>
 </html>
