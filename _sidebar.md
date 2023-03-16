@@ -1,5 +1,5 @@
 
-- [首页](/)
+- [序言](/)
 
 - 基础概念
   - [使用kubeadm快速搭建k8s集群](basic/01-build_in_virtual.md)
@@ -36,19 +36,19 @@
   - [服务暴露之Ingress](enhancement/20-ingress.md)
 
 - 实战
-  - [k8s“微型集群”的实现方案](combat/README.md)
-  - [k8s二进制安装环境准备](combat/01-prepare.md)
-  - [安装containerd作为runtime](combat/02-install_containerd.md)
-  - [签发SSL证书](combat/03-sign-prepare.md)
-  - [安装etcd服务](combat/04-install-ectd.md)
-  - [安装apiserver](combat/05-install-apiserver.md)
-  - [搭建L4反向代理服务](combat/06-install-agent-server.md)
-  - [安装controller-manager和scheduler](combat/07-install-other-component.md)
-  - [安装kubectl](combat/08-install-kubelet.md)
-  - [安装proxy](combat/09-install-kubeproxy.md)
-  - [安装calico和coreDNS](combat/10-install-calico-coredns.md)
-  - [安装traefik-ingress](combat/11-install-traefik.md)
-  - [在k8s环境部署应用](combat/12-deploy-app.md)
+  - [k8s“微型集群”的实现方案](ultimate/README.md)
+  - [k8s二进制安装环境准备](ultimate/01-prepare.md)
+  - [安装containerd作为runtime](ultimate/02-install_containerd.md)
+  - [签发SSL证书](ultimate/03-sign-prepare.md)
+  - [安装etcd服务](ultimate/04-install-ectd.md)
+  - [安装apiserver](ultimate/05-install-apiserver.md)
+  - [搭建L4反向代理服务](ultimate/06-install-agent-server.md)
+  - [安装controller-manager和scheduler](ultimate/07-install-other-component.md)
+  - [安装kubectl](ultimate/08-install-kubelet.md)
+  - [安装proxy](ultimate/09-install-kubeproxy.md)
+  - [安装calico和coreDNS](ultimate/10-install-calico-coredns.md)
+  - [安装traefik-ingress](ultimate/11-install-traefik.md)
+  - [在k8s环境部署应用](ultimate/12-deploy-app.md)
 
 - 扩展文章
   - [k8s资源分类](extend/01-k8s-resources.md)
