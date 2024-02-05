@@ -4,11 +4,11 @@
 
 ### 1.1 使用multipass搭建虚拟环境
 
-我们可以使用`multipass`来创建多台`Ubuntu Server`虚拟环境，作为Linux集群的环境。如果你不知道`multipass`这个虚拟化工具的使用方法，可以参考另一篇文章：<https://jiker.dev/posts/tools_run-ubuntu-on-multipass.html>。
+我们可以使用`multipass`来创建多台`Ubuntu Server`虚拟环境，作为Linux集群的环境。如果你不知道`multipass`这个虚拟化工具的使用方法，可以参考另一篇文章：<https://webcoding.tech/posts/tools_run-ubuntu-on-multipass.html>。
 
 ### 1.2 使用vagtrant搭建虚拟环境
 
-除了multipass，我们还可以使用`vagtrant`来创建Linux虚拟环境，`vagrant`的基本操作可以参考这篇文章：<https://jiker.dev/posts/tools_run-linux-on-vagrant.html>。
+除了multipass，我们还可以使用`vagtrant`来创建Linux虚拟环境，`vagrant`的基本操作可以参考这篇文章：<https://webcoding.tech/posts/tools_run-linux-on-vagrant.html>。
 
 ### 1.3 使用VirtualBox搭建虚拟环境
 

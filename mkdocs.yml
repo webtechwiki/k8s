@@ -1,0 +1,152 @@
+site_name: k8s入门与进阶实战
+site_url: https://webtech.wiki/k8s
+repo_url: https://github.com/webtechwiki/k8s
+repo_name: k8s入门与进阶实战
+site_author: phy.xyz
+site_description: k8s入门与进阶实战-kubernetes基础快速入门
+edit_uri: tree/main/docs
+
+# Copyright
+copyright: Copyright &copy; 2022 - 2023 phy.xyz
+
+# Theme
+theme:
+  name: material
+  language: zh
+  features:
+    - content.action.edit
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: white
+      toggle:
+        icon: material/theme-light-dark
+        name: Switch to dark mode
+    - scheme: slate
+      primary: grey
+      toggle:
+        icon: material/theme-light-dark
+        name: Switch to light mode
+  font:
+    text: Noto Sans SC
+    code: Fira Code
+  favicon: assets/img/favicon.ico
+
+# extra
+extra:
+  alternate:
+    - name: 中文
+      link: /
+      lang: zh-CN
+
+# Plugins
+plugins:
+  - search
+  - glightbox:
+      touchNavigation: true
+      loop: false
+      effect: zoom
+      slide_effect: none
+      width: 100%
+      height: auto
+      zoomable: true
+      draggable: false
+      auto_caption: false
+      caption_position: bottom
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Page tree
+nav:
+  - 首页: index.md
+  - 第 01 章 &nbsp; k8s基础概念:
+    - 1.01 &nbsp; kubeadm搭建k8s集群: 01.basic/01-build_in_virtual.md
+    - 1.02 &nbsp; 核心概念: 01.basic/02-conception.md
+    - 1.03 &nbsp; 核心组件: 01.basic/03-compoents.md
+    - 1.04 &nbsp; 资源配置清单: 01.basic/04-yaml.md
+    - 1.05 &nbsp; 名称空间: 01.basic/05-namespace.md
+    - 1.06 &nbsp; pod的基本操作: 01.basic/06-pod.md
+    - 1.07 &nbsp; 控制器: 01.basic/07-controller.md
+    - 1.08 &nbsp; 服务: 01.basic/08-service.md
+    - 1.09 &nbsp; Ingress: 01.basic/09-ingress.md
+    - 1.10 &nbsp; 存储: 01.basic/10-storage.md
+  - 第 02 章 &nbsp; 在centos7搭建k8s:
+    - 2.01 &nbsp; k8s进阶知识概述: 02.enhancement/01-summary.md
+    - 2.02 &nbsp; k8s二进制安装环境准备: 02.enhancement/02-prepare.md
+    - 2.03 &nbsp; 证书签发环境准备: 02.enhancement/03-sign-prepare.md
+    - 2.04 &nbsp; 安装docker: 02.enhancement/04-install-docker.md
+    - 2.05 &nbsp; 安装harhor服务: 02.enhancement/05-install-harbor.md
+    - 2.06 &nbsp; 安装etcd服务: 02.enhancement/06-install-etcd.md
+    - 2.07 &nbsp; 安装apiserver: 02.enhancement/07-install-apiserver.md
+    - 2.08 &nbsp; 安装L4反向代理服务: 02.enhancement/08-install-agent-server.md
+    - 2.09 &nbsp; 安装控制节点的其他组件: 02.enhancement/09-install-other-component.md
+    - 2.10 &nbsp; 安装kubectl: 02.enhancement/10-install-kubelet.md
+    - 2.11 &nbsp; 安装kube-02.proxy: 02.enhancement/11-install-kubeproxy.md
+    - 2.12 &nbsp; cfssl证书工具介绍: 02.enhancement/12-cfssl-review.md
+    - 2.13 &nbsp; 声明式资源管理方法: 02.enhancement/13-kubectl-command.md
+    - 2.14 &nbsp; 陈述式资源管理方法: 02.enhancement/14-kubectl-yaml.md
+    - 2.15 &nbsp; flannel网络插件: 02.enhancement/15-flannel-plugin.md
+    - 2.16 &nbsp; flannel模型介绍: 02.enhancement/16-flannel-model.md
+    - 2.17 &nbsp; flannel优化: 02.enhancement/17-flannel-optimize.md
+    - 2.18 &nbsp; 使用coredns实现服务发现: 02.enhancement/18-coredns.md
+    - 2.19 &nbsp; 服务暴露之nodePort型service: 02.enhancement/19-nodeport.md
+    - 2.20 &nbsp; 服务暴露之Ingress: 02.enhancement/20-ingress.md
+  - 第 03 章 &nbsp; 在debian搭建k8s:
+    - 3.01 &nbsp; k8s“微型集群”的实现方案: 03.ultimate/README.md
+    - 3.02 &nbsp; k8s二进制安装环境准备: 03.ultimate/01-prepare.md
+    - 3.03 &nbsp; 安装containerd作为runtime: 03.ultimate/02-install_containerd.md
+    - 3.04 &nbsp; 签发SSL证书: 03.ultimate/03-sign-prepare.md
+    - 3.05 &nbsp; 安装etcd服务: 03.ultimate/04-install-ectd.md
+    - 3.06 &nbsp; 安装apiserver: 03.ultimate/05-install-apiserver.md
+    - 3.07 &nbsp; 搭建L4反向代理服务: 03.ultimate/06-install-agent-server.md
+    - 3.08 &nbsp; 安装controllerManager和scheduler: 03.ultimate/07-install-other-component.md
+    - 3.09 &nbsp; 安装kubectl: 03.ultimate/08-install-kubelet.md
+    - 3.10 &nbsp; 安装proxy: 03.ultimate/09-install-kubeproxy.md
+    - 3.11 &nbsp; 安装calico和coreDNS: 03.ultimate/10-install-calico-coredns.md
+    - 3.12 &nbsp; 安装traefik: 03.ultimate/11-install-traefik.md
+    - 3.13 &nbsp; 在k8s环境部署应用: 03.ultimate/12-deploy-app.md
+  - 第 04 章 &nbsp; 扩展知识:
+    - 4.01 &nbsp; k8s资源分类: 04.extend/01-k8s-resources.md
+    - 4.02 &nbsp; 使用二进制安装包安装docker: 04.extend/02-install-docker.md
+    - 4.03 &nbsp; 搭建harbor私有镜像仓库: 04.extend/04-install-harbor.md
+    - 4.04 &nbsp; 集群搭建IP网段规划建议: 04.extend/05-ip_suggestion.md
+    - 4.05 &nbsp; 解决centos6镜像启动容器失败的问题: 04.extend/06-run-centos6.md
