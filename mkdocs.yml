@@ -98,8 +98,8 @@ markdown_extensions:
 # Page tree
 nav:
   - 首页: index.md
-  - 第 01 章 &nbsp; k8s基础概念:
-    - 1.01 &nbsp; kubeadm搭建k8s集群: 01.basic/01-build_in_virtual.md
+  - 第 01 章 &nbsp; k8s的基础概念:
+    - 1.01 &nbsp; k8s简介: 01.basic/00-start.md
     - 1.02 &nbsp; 核心概念: 01.basic/02-conception.md
     - 1.03 &nbsp; 核心组件: 01.basic/03-compoents.md
     - 1.04 &nbsp; 资源配置清单: 01.basic/04-yaml.md
@@ -109,6 +109,7 @@ nav:
     - 1.08 &nbsp; 服务: 01.basic/08-service.md
     - 1.09 &nbsp; Ingress: 01.basic/09-ingress.md
     - 1.10 &nbsp; 存储: 01.basic/10-storage.md
+    - 1.11 &nbsp; 搭建简单集群: 01.basic/01-build_in_virtual.md
   - 第 02 章 &nbsp; 在centos7搭建k8s:
     - 2.01 &nbsp; k8s进阶知识概述: 02.enhancement/01-summary.md
     - 2.02 &nbsp; k8s二进制安装环境准备: 02.enhancement/02-prepare.md
