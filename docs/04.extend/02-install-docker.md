@@ -93,6 +93,28 @@ systemctl start docker.service
 systemctl enable docker.service
 ```
 
+### 3.4 非root用户使用docker
+
+如果您想以非 root 用户身份运行 docker，那么您需要将其添加到 docker 组。
+
+如果 docker 用户组不存在，先创建 docker  用户组，如下命令
+
+```shell
+sudo groupadd docker
+```
+
+将用户添加到 docker 组，如下命令
+
+```shell
+sudo usermod -aG docker $USER
+```
+
+登录到新的 docker 组(以避免再次登出/登录; 但如果不行，可以重新启动系统) 
+
+```shell
+newgrp docker
+```
+
 ## 四、验证docker
 
 运行一个nginx容器，如下命令
