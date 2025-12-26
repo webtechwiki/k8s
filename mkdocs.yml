@@ -2,12 +2,12 @@ site_name: k8s入门与进阶实战
 site_url: https://webtech.wiki/k8s
 repo_url: https://github.com/webtechwiki/k8s
 repo_name: k8s入门与进阶实战
-site_author: phy.xyz
+site_author: https://github.com/geekdex
 site_description: k8s入门与进阶实战-kubernetes基础快速入门
 edit_uri: tree/main/docs
 
 # Copyright
-copyright: Copyright &copy; 2022 - 2023 phy.xyz
+copyright: Copyright &copy; 2022 - 2023 webtech.wiki
 
 # Theme
 theme:
