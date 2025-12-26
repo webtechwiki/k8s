@@ -7,7 +7,7 @@ site_description: k8s入门与进阶实战-kubernetes基础快速入门
 edit_uri: tree/main/docs
 
 # Copyright
-copyright: Copyright &copy; 2022 - 2023 webtech.wiki
+copyright: Copyright &copy; webtech.wiki
 
 # Theme
 theme:
