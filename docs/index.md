@@ -34,8 +34,8 @@ hide:
 
 <p align="center">快速上手kubernetes，掌握kubernetes核心知识！<br><br></p>
 
-<p align="center">作者: <a href="https://phy.xyz" target="_blank">https://phy.xyz</a></p>
-<p align="center"><img src="https://phy.xyz/images/wechat.jpg" width="200" /></p>
+<p align="center">作者: <a href="https://github.com/geekdex" target="_blank">极客开发者</a></p>
+<p align="center"><img src="img/imgeekdev.webp" width="160" /></p>
 
 <p align="center">
   <a href="/k8s/01.basic/00-start" class="rounded-button">
